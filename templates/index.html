@@ -224,56 +224,98 @@
                     <div class="card-body">
                         <p>Le framework intègre plusieurs couches de sécurité pour assurer un déploiement sécurisé et discret :</p>
                         
-                        <div class="progress mb-3" style="height: 25px;">
-                            <div class="progress-bar bg-success security-meter" data-value="95" data-max-value="100" data-min-value="0" role="progressbar" style="width: 0%;" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100">
-                                Chiffrement: <span class="meter-value">95</span>%
+                        <!-- Barre 1 - Chiffrement -->
+                        <div class="progress-container">
+                            <div id="myProgress">
+                                <div id="bar95" class="progress-bar progress-bar-95" style="width: 95%">
+                                    Chiffrement: 95%
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="progress mb-3" style="height: 25px;">
-                            <div class="progress-bar bg-success security-meter" data-value="90" data-max-value="100" data-min-value="0" role="progressbar" style="width: 0%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">
-                                Évasion EDR: <span class="meter-value">90</span>%
+                        <!-- Barre 2 - Évasion EDR -->
+                        <div class="progress-container">
+                            <div id="myProgress">
+                                <div id="bar90" class="progress-bar progress-bar-90" style="width: 90%">
+                                    Évasion EDR: 90%
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="progress mb-3" style="height: 25px;">
-                            <div class="progress-bar bg-warning security-meter" data-value="85" data-max-value="100" data-min-value="0" role="progressbar" style="width: 0%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
-                                Nettoyage des traces: <span class="meter-value">85</span>%
+                        <!-- Barre 3 - Nettoyage des traces -->
+                        <div class="progress-container">
+                            <div id="myProgress">
+                                <div id="bar85" class="progress-bar progress-bar-85" style="width: 85%">
+                                    Nettoyage des traces: 85%
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="progress mb-3" style="height: 25px;">
-                            <div class="progress-bar bg-info security-meter" data-value="80" data-max-value="100" data-min-value="0" role="progressbar" style="width: 0%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">
-                                Efficacité globale: <span class="meter-value">80</span>%
+                        <!-- Barre 4 - Efficacité globale -->
+                        <div class="progress-container">
+                            <div id="myProgress">
+                                <div id="bar80" class="progress-bar progress-bar-80" style="width: 80%">
+                                    Efficacité globale: 80%
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="card mt-3 border-primary">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Score de sécurité en temps réel</h5>
+                        <!-- Script pour animer les barres -->
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Animer progressivement les barres au chargement de la page
+                            animateBar('bar95', 95);
+                            animateBar('bar90', 90);
+                            animateBar('bar85', 85);
+                            animateBar('bar80', 80);
+                            animateBar('barRealtime', 75); // Barre en temps réel
+                            
+                            function animateBar(id, targetPercent) {
+                                const bar = document.getElementById(id);
+                                if (!bar) return; // Sécurité si l'élément n'existe pas
+                                
+                                let width = 0;
+                                const duration = 1000; // ms
+                                const fps = 60;
+                                const frames = duration / (1000 / fps);
+                                const increment = targetPercent / frames;
+                                
+                                bar.style.width = '0%';
+                                
+                                const animation = setInterval(function() {
+                                    if (width >= targetPercent) {
+                                        clearInterval(animation);
+                                    } else {
+                                        width += increment;
+                                        if (width > targetPercent) width = targetPercent;
+                                        
+                                        bar.style.width = width + '%';
+                                        // Mettre à jour le texte de la barre
+                                        bar.textContent = Math.round(width) + '%';
+                                    }
+                                }, 1000 / fps);
+                            }
+                        });
+                        </script>
+                        
+                        <!-- Score en temps réel -->
+                        <div class="realtime-score mt-4">
+                            <div class="realtime-score-header">
+                                <i class="bi bi-activity"></i> Score de sécurité en temps réel
                             </div>
-                            <div class="card-body">
-                                <div class="row align-items-center">
-                                    <div class="col-md-8">
-                                        <div class="progress" style="height: 30px;">
-                                            <div id="global-security-meter" class="progress-bar security-meter" 
-                                                data-value="75" data-max-value="100" data-min-value="0" 
-                                                role="progressbar" style="width: 0%;" 
-                                                aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="fw-bold">75%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div id="security-level" class="text-center">
-                                            <i class="bi bi-shield-check text-success fs-2"></i>
-                                            <div class="mt-1 fw-bold">Niveau de sécurité élevé</div>
-                                        </div>
+                            <div class="realtime-score-content">
+                                <div class="realtime-score-bar-container">
+                                    <div id="myProgress">
+                                        <div id="barRealtime" class="progress-bar progress-bar-75" style="width: 75%">75%</div>
                                     </div>
                                 </div>
-                                <div class="text-muted small mt-2">
-                                    Ce score est calculé d'après les paramètres actuels et les fonctionnalités activées.
+                                <div class="realtime-score-level level-elevated">
+                                    <i class="bi bi-shield-check"></i>
+                                    <span>Niveau de sécurité élevé</span>
                                 </div>
+                            </div>
+                            <div class="realtime-score-footer p-2">
+                                <small class="text-muted">Ce score est calculé d'après les paramètres actuels et les fonctionnalités activées.</small>
                             </div>
                         </div>
                     </div>
