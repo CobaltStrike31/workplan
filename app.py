@@ -19,7 +19,8 @@ from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from utils.security_metrics import get_security_metrics_for_ui, get_edr_bypass_stats
-from scanners.av_scanner import get_file_info, simulate_av_scan, display_scan_results, get_virustotal_report
+from scanners.av_scanner import get_file_info, simulate_av_scan, display_scan_results
+from scanners.free_av_scanner import scan_file_with_free_apis, get_scan_results
 from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
@@ -196,35 +197,10 @@ def process_av_scan():
         api_key = request.form.get('api_key', '')
         
         # Effectuer une analyse en fonction du type choisi
-        if scan_type == 'virustotal':
-            # Analyse VirusTotal
-            if not api_key:
-                # Nettoyer le fichier temporaire
-                os.remove(temp_file_path)
-                return jsonify({"error": "Une clé API VirusTotal est requise pour ce type d'analyse"}), 400
-            
-            # Obtenir un rapport VirusTotal pour le hash du fichier
-            report = get_virustotal_report(api_key, file_info['hash'])
-            
-        elif scan_type == 'hybrid_analysis':
-            # Analyse Hybrid Analysis
-            if not api_key:
-                # Nettoyer le fichier temporaire
-                os.remove(temp_file_path)
-                return jsonify({"error": "Une clé API Hybrid Analysis est requise pour ce type d'analyse"}), 400
-            
-            # Obtenir un rapport Hybrid Analysis pour le hash du fichier
-            report = check_with_hybrid_analysis(api_key, file_info['hash'])
-            
-        elif scan_type == 'metadefender':
-            # Analyse MetaDefender
-            if not api_key:
-                # Nettoyer le fichier temporaire
-                os.remove(temp_file_path)
-                return jsonify({"error": "Une clé API MetaDefender est requise pour ce type d'analyse"}), 400
-            
-            # Obtenir un rapport MetaDefender pour le hash du fichier
-            report = check_with_metadefender(api_key, file_info['hash'])
+        if scan_type == 'apis_gratuites':
+            # Utiliser les API gratuites sans clé
+            scan_id = scan_file_with_free_apis(temp_file_path)
+            report = get_scan_results(scan_id)
             
         else:
             # Analyse simulée (dans notre backend)
