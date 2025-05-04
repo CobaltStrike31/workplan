@@ -48,45 +48,48 @@ function setupDynamicSecurityMeters() {
     
     // Mettre à jour le score quand un paramètre change
     const updateSecurityScore = () => {
-        let baseScore = 40; // Score de base plus faible pour rendre les choix plus impactants
+        let securityScore = 40; // Score de base plus faible pour rendre les choix plus impactants
         
         // Ajustement selon la méthode de chiffrement (impact majeur)
         if (encryptionMethod.value === 'aes-256-cbc') {
-            baseScore += 30;  // Meilleure méthode = +30
+            securityScore += 30;  // Meilleure méthode = +30
         } else if (encryptionMethod.value === 'aes-128-cbc') {
-            baseScore += 20;  // Méthode bonne mais moins sécurisée = +20
+            securityScore += 20;  // Méthode bonne mais moins sécurisée = +20
         } else if (encryptionMethod.value === 'xor') {
-            baseScore -= 10;  // Méthode simple et vulnérable = -10
+            securityScore -= 10;  // Méthode simple et vulnérable = -10
         }
         
         // Ajustement pour l'obfuscation (impact modéré)
         if (applyObfuscation && applyObfuscation.checked) {
-            baseScore += 15;  // L'obfuscation augmente significativement la sécurité
+            securityScore += 15;  // L'obfuscation augmente significativement la sécurité
         } else if (applyObfuscation) {
-            baseScore -= 15;  // Ne pas appliquer l'obfuscation = risque accru
+            securityScore -= 15;  // Ne pas appliquer l'obfuscation = risque accru
         }
         
         // Ajustement pour la vérification d'intégrité (impact significatif)
         if (verifyIntegrity && verifyIntegrity.checked) {
-            baseScore += 25;  // La vérification HMAC est cruciale pour l'intégrité
+            securityScore += 25;  // La vérification HMAC est cruciale pour l'intégrité
         } else if (verifyIntegrity) {
-            baseScore -= 25;  // Sans vérification d'intégrité, le risque est important
+            securityScore -= 25;  // Sans vérification d'intégrité, le risque est important
         }
         
         // Vérification du mot de passe (si visible et rempli)
         const passwordField = document.getElementById('password');
         if (passwordField && passwordField.value) {
             const passwordStrength = calculatePasswordStrength(passwordField.value);
-            baseScore += passwordStrength;  // Ajoute entre -10 et +15 selon la force
+            securityScore += passwordStrength;  // Ajoute entre -10 et +15 selon la force
         }
         
         // Limiter le score entre 0 et 100
-        baseScore = Math.max(0, Math.min(100, baseScore));
+        securityScore = Math.max(0, Math.min(100, securityScore));
+        
+        // Afficher le score dans la console pour déboguer
+        console.log('Score de sécurité calculé:', securityScore);
         
         // Mettre à jour le compteur si disponible
         if (securityScoreMeter) {
-            animateSecurityMeter(securityScoreMeter, baseScore, 0, 100, false);
-            updateSecurityLabel(securityScoreMeter.nextElementSibling, baseScore);
+            animateSecurityMeter(securityScoreMeter, securityScore, 0, 100, false);
+            updateSecurityLabel(securityScoreMeter.nextElementSibling, securityScore);
         }
     };
     
@@ -170,30 +173,57 @@ function animateSecurityMeter(meterElement, targetValue, minValue, maxValue, dan
     meterElement.style.width = '0%';
     meterElement.style.transition = 'none'; // Désactiver la transition CSS
     
-    // Animation JS progressive
-    const startTime = performance.now();
-    const duration = 800; // ms, plus rapide pour une meilleure réactivité
+    // Animation style React avec des transitions plus fluides
     
-    function animate(currentTime) {
-        const elapsedTime = currentTime - startTime;
-        const progress = Math.min(elapsedTime / duration, 1);
+    // Récupérer la valeur actuelle (si disponible)
+    const currentWidth = parseFloat(meterElement.style.width) || 0;
+    const currentValue = parseInt(meterElement.dataset.value) || 0;
+    
+    // Calculer la différence pour l'animation progressive
+    const widthDiff = percentage - currentWidth;
+    const valueDiff = targetValue - currentValue;
+    
+    // Nombre de frames pour une animation ultra-fluide (60fps pendant 500ms)
+    const frames = 30;
+    let frame = 0;
+    
+    // Utiliser un spring effect comme dans React-Spring
+    const springConfig = { tension: 0.25, friction: 0.9, velocity: 0.05 };
+    
+    function animate(timestamp) {
+        // Spring physics pour une animation fluide très naturelle
+        // Imite le comportement de React-Spring
+        frame++;
         
-        // Fonction d'accélération/décélération pour une animation plus naturelle
-        const easeInOutCubic = progress < 0.5 
-            ? 4 * progress * progress * progress 
-            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        // Progression non-linéaire (accélère puis ralentit)
+        const spring = (t) => {
+            // Fonction qui imite une animation à ressort
+            const tension = springConfig.tension;
+            const friction = springConfig.friction;
+            
+            // Équation simplifiée de mouvement à ressort amorti
+            return 1 - Math.cos(tension * t * Math.PI) * Math.exp(-friction * t);
+        };
         
-        // Appliquer la largeur
-        const currentWidth = easeInOutCubic * percentage;
-        meterElement.style.width = currentWidth + '%';
+        const progress = Math.min(frame / frames, 1);
+        const springProgress = spring(progress);
         
-        // Mettre à jour le texte de la valeur si présent
+        // Appliquer la largeur avec l'effet spring
+        const newWidth = currentWidth + (widthDiff * springProgress);
+        meterElement.style.width = newWidth + '%';
+        
+        // Mettre à jour le texte avec l'effet spring aussi
         const valueDisplay = meterElement.querySelector('.meter-value');
         if (valueDisplay) {
-            valueDisplay.textContent = Math.round(easeInOutCubic * targetValue);
+            const newValue = Math.round(currentValue + (valueDiff * springProgress));
+            valueDisplay.textContent = newValue;
+            
+            // Ajouter un effet de highlight sur le changement de valeur
+            valueDisplay.classList.add('value-changing');
+            setTimeout(() => valueDisplay.classList.remove('value-changing'), 150);
         }
         
-        // Continuer l'animation si elle n'est pas terminée
+        // Continuer l'animation jusqu'à complétion
         if (progress < 1) {
             requestAnimationFrame(animate);
         }

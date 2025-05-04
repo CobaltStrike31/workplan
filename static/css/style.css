@@ -343,6 +343,81 @@ input:checked + .slider:before {
     font-size: 1rem;
 }
 
+/* Style pour les compteurs de sécurité */
+.security-meter-container {
+    margin: 20px 0;
+}
+
+.security-meter-bg {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    height: 25px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.security-meter {
+    height: 100%;
+    width: 0;
+    border-radius: 5px;
+    position: relative;
+    /* Ombre légère pour effet de profondeur */
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    /* Ajout d'un effet de "glow" subtil */
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.1) 100%);
+}
+
+.security-meter-label {
+    font-weight: 500;
+    padding-top: 5px;
+}
+
+.security-meter .meter-value {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+    /* Transition pour l'effet de highlighting */
+    transition: all 0.2s ease;
+}
+
+/* Animation "React-like" pour le highlight des valeurs qui changent */
+.value-changing {
+    font-size: 110%;
+    text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 5px rgba(255,255,255,0.5) !important;
+    animation: value-pulse 0.3s ease-in-out;
+}
+
+@keyframes value-pulse {
+    0% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.2); }
+    100% { transform: translateY(-50%) scale(1); }
+}
+
+/* Effet de transition fluide pour tous les éléments */
+.modal-body input, .modal-body select {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Courbe d'accélération React */
+}
+
+.modal-body input:focus, .modal-body select:focus {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Animation pour les checkboxes style React */
+.form-check-input {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-check-input:checked {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .card-body {

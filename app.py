@@ -152,6 +152,10 @@ def convert_pe():
 def documentation():
     return render_template('documentation.html')
 
+@app.route('/demo')
+def demo():
+    return render_template('demo.html')
+
 @app.route('/system_health')
 def system_health():
     health_data = check_system_health()

