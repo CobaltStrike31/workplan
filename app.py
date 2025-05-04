@@ -19,6 +19,7 @@ from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from utils.security_metrics import get_security_metrics_for_ui, get_edr_bypass_stats
+from scanners.av_scanner import get_file_info, simulate_av_scan, display_scan_results, get_virustotal_report
 from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
@@ -156,6 +157,82 @@ def documentation():
 @app.route('/demo')
 def demo():
     return render_template('demo.html')
+
+@app.route('/scan_av')
+def scan_av():
+    """
+    Page d'analyse antivirus inspirée de premantel
+    """
+    return render_template('scan_av.html')
+
+@app.route('/process_av_scan', methods=['POST'])
+def process_av_scan():
+    """
+    Traitement d'une demande d'analyse antivirus
+    """
+    try:
+        # Vérifier si un fichier a été envoyé
+        if 'file' not in request.files:
+            return jsonify({"error": "Aucun fichier n'a été fourni"}), 400
+        
+        file = request.files['file']
+        
+        # Vérifier si un fichier a été sélectionné
+        if file.filename == '':
+            return jsonify({"error": "Aucun fichier n'a été sélectionné"}), 400
+        
+        # Créer un dossier temporaire si nécessaire
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        
+        # Sauvegarder le fichier dans un emplacement temporaire
+        temp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"scan_{uuid.uuid4().hex}")
+        file.save(temp_file_path)
+        
+        # Obtenir les informations du fichier
+        file_info = get_file_info(temp_file_path)
+        
+        # Déterminer le type d'analyse à effectuer
+        scan_type = request.form.get('scan_type', 'simulated')
+        
+        if scan_type == 'virustotal':
+            # Analyse VirusTotal
+            api_key = request.form.get('api_key', '')
+            if not api_key:
+                # Nettoyer le fichier temporaire
+                os.remove(temp_file_path)
+                return jsonify({"error": "Une clé API VirusTotal est requise pour ce type d'analyse"}), 400
+            
+            # Obtenir un rapport VirusTotal pour le hash du fichier
+            vt_report = get_virustotal_report(api_key, file_info['hash'])
+            
+            # Nettoyer le fichier temporaire
+            os.remove(temp_file_path)
+            
+            if 'error' in vt_report:
+                return jsonify({"error": vt_report['error']}), 400
+            
+            # Formater les résultats pour l'affichage
+            return jsonify(vt_report), 200
+        else:
+            # Analyse simulée (dans notre backend)
+            scan_id = simulate_av_scan(file_info)
+            
+            # Nettoyer le fichier temporaire
+            os.remove(temp_file_path)
+            
+            # Récupérer et renvoyer les résultats de l'analyse
+            scan_results = display_scan_results(scan_id)
+            return jsonify(scan_results), 200
+    
+    except Exception as e:
+        # En cas d'erreur, nettoyer tout fichier temporaire qui pourrait avoir été créé
+        try:
+            if 'temp_file_path' in locals() and os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+        except:
+            pass
+        
+        return jsonify({"error": f"Erreur lors de l'analyse: {str(e)}"}), 500
 
 @app.route('/system_health')
 def system_health():

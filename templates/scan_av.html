@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+
+{% block title %}Analyse Antivirus - OPSEC Loader{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0"><i class="bi bi-shield-check me-2"></i>Analyse Antivirus</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p><i class="bi bi-info-circle me-2"></i> Cette page vous permet d'analyser un binaire ou un shellcode avec différents moteurs antivirus pour évaluer son taux de détection.</p>
+                        <p class="mb-0">Utilisez cette fonctionnalité à des fins éducatives pour comprendre les limites des technologies de détection.</p>
+                    </div>
+                    
+                    <form action="{{ url_for('process_av_scan') }}" method="post" enctype="multipart/form-data" id="scan-form">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="file" class="form-label">Fichier à analyser</label>
+                                    <input type="file" class="form-control" id="file" name="file" required>
+                                    <div class="form-text">Taille maximale: 10MB</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="scan_type" class="form-label">Type d'analyse</label>
+                                    <select class="form-select" id="scan_type" name="scan_type">
+                                        <option value="simulated" selected>Analyse simulée (rapide)</option>
+                                        <option value="virustotal">VirusTotal (API externe)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="api-key-container" class="mb-3" style="display: none;">
+                            <label for="api_key" class="form-label">Clé API VirusTotal</label>
+                            <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Entrez votre clé API VirusTotal">
+                            <div class="form-text">Requis uniquement pour l'analyse VirusTotal</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="include_details" name="include_details" checked>
+                                <label class="form-check-label" for="include_details">
+                                    Inclure les détails de détection
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="scan-button">
+                                <i class="bi bi-search me-2"></i>Analyser le fichier
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section résultats de scan (initialement cachée) -->
+    <div class="row" id="scan-results-container" style="display: none;">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Résultats de l'analyse</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="scan-header">
+                                <h4>Rapport pour le scan: <span id="scan-id">-</span></h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Nom:</th>
+                                                <td id="file-name">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Taille:</th>
+                                                <td id="file-size">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Type:</th>
+                                                <td id="file-type">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>First seen:</th>
+                                                <td id="file-first-seen">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>MD5:</th>
+                                                <td id="file-md5">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>SHA1:</th>
+                                                <td id="file-sha1">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Status:</th>
+                                                <td id="scan-status">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Scan effectué le:</th>
+                                                <td id="scan-date">-</td>
+                                            </tr>
+                                        </table>
+                                        <div class="alert alert-info mt-3">
+                                            <h5 class="mb-2"><i class="bi bi-shield-check me-2"></i>Détection: <span id="detection-rate">-</span></h5>
+                                            <div class="progress" style="height: 20px;">
+                                                <div id="detection-progress" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4><i class="bi bi-list-check me-2"></i>Résultats par antivirus</h4>
+                            <div class="av-results-grid" id="av-results-grid">
+                                <!-- Les résultats seront injectés ici par JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .av-results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .av-result-card {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .av-result-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .av-result-card.detected {
+        border-left: 4px solid var(--danger-color);
+    }
+
+    .av-result-card.clean {
+        border-left: 4px solid var(--success-color);
+    }
+
+    .av-logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 15px;
+    }
+
+    .av-info {
+        flex-grow: 1;
+    }
+
+    .av-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .av-detection {
+        font-size: 0.9rem;
+    }
+
+    .av-date {
+        font-size: 0.8rem;
+        color: var(--text-color);
+        opacity: 0.7;
+    }
+
+    .detection-type {
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+
+    .detection-type.safe {
+        background-color: var(--success-color);
+        color: white;
+    }
+
+    .detection-type.malware {
+        background-color: var(--danger-color);
+        color: white;
+    }
+
+    #scan-button {
+        position: relative;
+    }
+
+    #scan-button.loading::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.2);
+        border-radius: inherit;
+    }
+
+    #scan-button.loading .spinner-border {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -8px;
+        margin-left: -8px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion de l'affichage du champ API Key
+    const scanTypeSelect = document.getElementById('scan_type');
+    const apiKeyContainer = document.getElementById('api-key-container');
+    
+    scanTypeSelect.addEventListener('change', function() {
+        if (this.value === 'virustotal') {
+            apiKeyContainer.style.display = 'block';
+        } else {
+            apiKeyContainer.style.display = 'none';
+        }
+    });
+    
+    // Gestion du formulaire de scan
+    const scanForm = document.getElementById('scan-form');
+    const scanButton = document.getElementById('scan-button');
+    const resultsContainer = document.getElementById('scan-results-container');
+    
+    if (scanForm) {
+        scanForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Afficher l'indicateur de chargement
+            scanButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyse en cours...';
+            scanButton.classList.add('loading');
+            scanButton.disabled = true;
+            
+            // Créer un FormData pour envoyer le fichier
+            const formData = new FormData(scanForm);
+            
+            // Envoyer la requête avec fetch
+            fetch('{{ url_for("process_av_scan") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de l\'analyse');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Masquer l'indicateur de chargement
+                scanButton.innerHTML = '<i class="bi bi-search me-2"></i>Analyser le fichier';
+                scanButton.classList.remove('loading');
+                scanButton.disabled = false;
+                
+                if (data.error) {
+                    showNotification(data.error, 'danger');
+                    return;
+                }
+                
+                // Afficher les résultats
+                displayScanResults(data);
+                resultsContainer.style.display = 'block';
+                
+                // Faire défiler jusqu'aux résultats
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            })
+            .catch(error => {
+                // Masquer l'indicateur de chargement
+                scanButton.innerHTML = '<i class="bi bi-search me-2"></i>Analyser le fichier';
+                scanButton.classList.remove('loading');
+                scanButton.disabled = false;
+                
+                showNotification('Erreur: ' + error.message, 'danger');
+            });
+        });
+    }
+    
+    // Fonction pour afficher les résultats du scan
+    function displayScanResults(data) {
+        // Mettre à jour les informations du fichier
+        document.getElementById('scan-id').textContent = data.scan_id || '-';
+        document.getElementById('file-name').textContent = data.file_info.name || '-';
+        document.getElementById('file-size').textContent = data.file_info.size || '-';
+        document.getElementById('file-type').textContent = data.file_info.type || 'Unknown';
+        document.getElementById('file-first-seen').textContent = data.file_info.first_seen || '-';
+        document.getElementById('file-md5').textContent = data.file_info.md5 || '-';
+        document.getElementById('file-sha1').textContent = data.file_info.sha1 || '-';
+        
+        document.getElementById('scan-status').textContent = data.status || '-';
+        document.getElementById('scan-date').textContent = data.scan_date || '-';
+        
+        // Mettre à jour le taux de détection
+        const detectionRate = document.getElementById('detection-rate');
+        const detectionProgress = document.getElementById('detection-progress');
+        
+        if (data.detection_rate) {
+            detectionRate.textContent = data.detection_rate;
+            
+            // Calculer le pourcentage de détection
+            const [detected, total] = data.detection_rate.split('/');
+            const percentage = (parseInt(detected) / parseInt(total)) * 100;
+            
+            detectionProgress.style.width = percentage + '%';
+            detectionProgress.setAttribute('aria-valuenow', percentage);
+            
+            // Ajuster la couleur en fonction du pourcentage
+            if (percentage === 0) {
+                detectionProgress.classList.remove('bg-danger', 'bg-warning');
+                detectionProgress.classList.add('bg-success');
+            } else if (percentage < 30) {
+                detectionProgress.classList.remove('bg-danger', 'bg-success');
+                detectionProgress.classList.add('bg-warning');
+            } else {
+                detectionProgress.classList.remove('bg-warning', 'bg-success');
+                detectionProgress.classList.add('bg-danger');
+            }
+        }
+        
+        // Afficher les résultats des antivirus
+        const avResultsGrid = document.getElementById('av-results-grid');
+        avResultsGrid.innerHTML = '';
+        
+        if (data.results && data.results.length > 0) {
+            data.results.forEach(result => {
+                const card = document.createElement('div');
+                card.className = result.detection ? 'av-result-card detected' : 'av-result-card clean';
+                
+                // Créer le HTML pour chaque résultat
+                card.innerHTML = `
+                    <div class="av-logo">
+                        <img src="${result.logo_path || '/static/images/av_logos/default.png'}" alt="${result.av_name}" width="40" height="40" onerror="this.src='/static/images/av_logos/default.png'">
+                    </div>
+                    <div class="av-info">
+                        <div class="av-name">${result.av_name}</div>
+                        <div class="av-detection">
+                            <span class="detection-type ${result.detection ? 'malware' : 'safe'}">
+                                ${result.detection ? (result.detection_name || 'Malware détecté') : 'Clean'}
+                            </span>
+                        </div>
+                        <div class="av-date">${result.timestamp}</div>
+                    </div>
+                `;
+                
+                avResultsGrid.appendChild(card);
+            });
+        } else {
+            avResultsGrid.innerHTML = '<div class="alert alert-warning">Aucun résultat disponible</div>';
+        }
+    }
+});
+</script>
+{% endblock %}
