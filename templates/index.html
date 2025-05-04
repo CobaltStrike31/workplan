@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPSEC Loader Verification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.css">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <h1>OPSEC Loader Framework Verification</h1>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <a href="{{ url_for('documentation') }}">Documentation</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <h2>Framework Verification Tool</h2>
+            <p>This tool verifies the functionality and security of the OPSEC Loader framework for educational purposes about antivirus limitations.</p>
+            
+            <div class="alert info-box">
+                <strong>Educational Purpose:</strong> This tool is designed for educational demonstration only, to show the limitations of antivirus solutions and to understand advanced evasion techniques.
+            </div>
+            
+            <form id="verification-form" action="{{ url_for('verify') }}" method="post" enctype="multipart/form-data">
+                <div id="form-errors" class="alert error-box" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label for="framework_path">OPSEC Loader Framework Path</label>
+                    <input type="text" id="framework_path" name="framework_path" class="form-control" 
+                           placeholder="e.g., /path/to/opsec_loader or C:\path\to\opsec_loader">
+                    <small>Enter the full path to the OPSEC Loader framework root directory</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="os_type">Operating System</label>
+                    <select id="os_type" name="os_type" class="form-control">
+                        <option value="windows">Windows</option>
+                        <option value="linux">Linux</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pe_file">Test PE File (Optional)</label>
+                    <input type="file" id="pe_file" name="pe_file" class="form-control">
+                    <small>If no file is provided, the framework will be tested with default samples</small>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="check-circle"></i> Run Complete Verification
+                    </button>
+                </div>
+            </form>
+            
+            <div class="separator">
+                <span>Or verify individual components</span>
+            </div>
+            
+            <div class="component-tests">
+                <h3>Component Testing</h3>
+                <p>Test specific components of the OPSEC Loader framework separately</p>
+                
+                <div class="component-grid">
+                    <!-- PE to Shellcode Conversion -->
+                    <div class="component-card">
+                        <h4>PE to Shellcode Conversion</h4>
+                        <p>Verify the polymorphic PE-to-Shellcode conversion functionality</p>
+                        <button class="btn btn-secondary test-component-btn" data-component="pe_conversion">
+                            <i data-feather="code"></i> Test Conversion
+                        </button>
+                        <div id="pe_conversion-result" class="component-result-container"></div>
+                    </div>
+                    
+                    <!-- Encryption -->
+                    <div class="component-card">
+                        <h4>Encryption</h4>
+                        <p>Test the AES-256-CBC encryption of payloads and key management</p>
+                        <button class="btn btn-secondary test-component-btn" data-component="encryption">
+                            <i data-feather="lock"></i> Test Encryption
+                        </button>
+                        <div id="encryption-result" class="component-result-container"></div>
+                    </div>
+                    
+                    <!-- Memory Execution -->
+                    <div class="component-card">
+                        <h4>Memory Execution</h4>
+                        <p>Verify the in-memory loading and execution functionality</p>
+                        <button class="btn btn-secondary test-component-btn" data-component="memory_execution">
+                            <i data-feather="cpu"></i> Test Memory Execution
+                        </button>
+                        <div id="memory_execution-result" class="component-result-container"></div>
+                    </div>
+                    
+                    <!-- EDR/AV Evasion -->
+                    <div class="component-card">
+                        <h4>EDR/AV Evasion</h4>
+                        <p>Test the framework's ability to evade security solutions</p>
+                        <button class="btn btn-secondary test-component-btn" data-component="evasion">
+                            <i data-feather="shield"></i> Test Evasion
+                        </button>
+                        <div id="evasion-result" class="component-result-container"></div>
+                    </div>
+                    
+                    <!-- Cleanup Validation -->
+                    <div class="component-card">
+                        <h4>Cleanup Validation</h4>
+                        <p>Verify the automatic cleanup of artifacts and traces</p>
+                        <button class="btn btn-secondary test-component-btn" data-component="cleanup">
+                            <i data-feather="trash-2"></i> Test Cleanup
+                        </button>
+                        <div id="cleanup-result" class="component-result-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>OPSEC Loader Framework Verification Tool - For Educational Purposes Only</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Feather icons
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+        });
+    </script>
+</body>
+</html>

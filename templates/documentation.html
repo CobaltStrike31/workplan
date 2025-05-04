@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - OPSEC Loader Verification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.css">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <h1>OPSEC Loader Framework Verification</h1>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <a href="{{ url_for('documentation') }}">Documentation</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content documentation-content">
+            <h2>OPSEC Loader Framework Documentation</h2>
+            
+            <div class="alert info-box">
+                <strong>Educational Purpose:</strong> This documentation is provided for educational purposes only to demonstrate the limitations of antivirus solutions and to understand advanced security concepts.
+            </div>
+            
+            <div class="documentation-section">
+                <h2>1. Overview</h2>
+                <p>The OPSEC Loader is a framework designed for the secure deployment of security testing payloads with advanced evasion mechanisms. It transforms executable files into polymorphic shellcode, encrypts them, and executes them in memory to avoid detection by security solutions.</p>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li><strong>Polymorphic PE-to-Shellcode Conversion:</strong> Transforms executables into shellcode with random variations</li>
+                    <li><strong>AES-256-CBC Encryption:</strong> Secures payloads with strong cryptographic protection</li>
+                    <li><strong>Memory-only Execution:</strong> Loads and executes payloads without touching the disk</li>
+                    <li><strong>EDR/AV Evasion:</strong> Uses various techniques to avoid detection</li>
+                    <li><strong>Automatic Cleanup:</strong> Removes all traces of operation</li>
+                </ul>
+            </div>
+            
+            <div class="documentation-section">
+                <h2>2. Verification Tool</h2>
+                <p>The verification tool provided in this web application validates the functionality and security of the OPSEC Loader framework. It tests each component individually and as part of the complete workflow.</p>
+                
+                <h3>Verification Process</h3>
+                <ol>
+                    <li>Provide the path to your OPSEC Loader framework installation</li>
+                    <li>Select your operating system (Windows or Linux)</li>
+                    <li>Optionally provide a test PE file for the verification</li>
+                    <li>The tool runs a comprehensive verification of all components</li>
+                    <li>Results are displayed with detailed information for each component</li>
+                </ol>
+                
+                <h3>Component Testing</h3>
+                <p>You can also test individual components separately:</p>
+                <ul>
+                    <li><strong>PE to Shellcode Conversion:</strong> Tests the transformation of executables to shellcode</li>
+                    <li><strong>Encryption:</strong> Validates the encryption and key management</li>
+                    <li><strong>Memory Execution:</strong> Verifies the in-memory loading functionality</li>
+                    <li><strong>EDR/AV Evasion:</strong> Tests the effectiveness of evasion techniques</li>
+                    <li><strong>Cleanup Validation:</strong> Verifies that no traces are left behind</li>
+                </ul>
+            </div>
+            
+            <div class="documentation-section">
+                <h2>3. Technical Details</h2>
+                
+                <h3>PE to Shellcode Conversion</h3>
+                <p>The framework converts Portable Executable (PE) files into position-independent shellcode that can be executed directly in memory without using the Windows loader.</p>
+                
+                <div class="code-block">
+# Example of conversion process (simplified):
+python custom_pe2sc.py --input malware.exe --output shellcode.bin --polymorphic
+                </div>
+                
+                <h3>Encryption</h3>
+                <p>After conversion, the shellcode is encrypted using AES-256-CBC with a randomly generated key. The encryption adds an additional layer of protection against static analysis.</p>
+                
+                <div class="code-block">
+# Example of encryption process (simplified):
+python encrypt_shell.py --input shellcode.bin --output encrypted.bin --key-file key.bin
+                </div>
+                
+                <h3>Memory Execution</h3>
+                <p>The loader allocates memory, decrypts the shellcode in memory, and executes it without writing any decrypted content to disk. This avoids triggering file-based detection mechanisms.</p>
+                
+                <div class="code-block">
+// Simplified memory execution (C++):
+void* exec_mem = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+memcpy(exec_mem, decrypted_shellcode, size);
+((void(*)())exec_mem)();
+                </div>
+                
+                <h3>EDR/AV Evasion Techniques</h3>
+                <ul>
+                    <li><strong>API Hashing:</strong> Resolves Windows APIs using hash values instead of strings</li>
+                    <li><strong>Junk Code Insertion:</strong> Adds non-functional code to change signatures</li>
+                    <li><strong>Direct System Calls:</strong> Bypasses userland hooks by making direct system calls</li>
+                    <li><strong>Process Hollowing:</strong> Injects code into legitimate processes</li>
+                    <li><strong>Stack Strings:</strong> Constructs strings at runtime instead of storing them</li>
+                </ul>
+                
+                <h3>Cleanup Procedures</h3>
+                <p>After execution, the framework erases all traces of its operation, including:</p>
+                <ul>
+                    <li>Securely wiping memory regions used for decryption</li>
+                    <li>Removing temporary files</li>
+                    <li>Clearing logs and indicators</li>
+                    <li>Restoring modified system settings</li>
+                </ul>
+            </div>
+            
+            <div class="documentation-section">
+                <h2>4. Usage Guidelines</h2>
+                
+                <div class="warning-box">
+                    <h3>Important Warning</h3>
+                    <p>The OPSEC Loader framework is designed for educational and authorized security testing purposes only. Misuse of this tool for unauthorized activities is illegal and unethical.</p>
+                </div>
+                
+                <h3>Proper Usage Scenarios</h3>
+                <ul>
+                    <li>Authorized penetration testing</li>
+                    <li>Security research in controlled environments</li>
+                    <li>Educational demonstrations of security concepts</li>
+                    <li>Testing your own defense mechanisms</li>
+                </ul>
+                
+                <h3>Verification Tool Prerequisites</h3>
+                <ul>
+                    <li>Python 3.8 or higher with PyCryptodome installed</li>
+                    <li>C++ compiler (MSVC on Windows, GCC on Linux)</li>
+                    <li>Administrative/root privileges for memory operations</li>
+                    <li>Access to the OPSEC Loader framework files</li>
+                </ul>
+            </div>
+            
+            <div class="documentation-section">
+                <h2>5. Understanding the Results</h2>
+                
+                <h3>Verification Result Interpretation</h3>
+                <p>The verification results provide detailed information about each component's functionality:</p>
+                
+                <ul>
+                    <li><strong>Success Status:</strong> Whether the component passed verification</li>
+                    <li><strong>Hash Values:</strong> Cryptographic hashes of generated files for integrity verification</li>
+                    <li><strong>Size Changes:</strong> Comparison of file sizes before and after processing</li>
+                    <li><strong>Detection Status:</strong> Results of checks against security solutions</li>
+                    <li><strong>Performance Metrics:</strong> Execution time and resource usage</li>
+                </ul>
+                
+                <h3>Common Issues and Troubleshooting</h3>
+                <ul>
+                    <li><strong>Permission Errors:</strong> Ensure you're running with administrative/root privileges</li>
+                    <li><strong>Missing Dependencies:</strong> Check that all required libraries are installed</li>
+                    <li><strong>Framework Path Errors:</strong> Verify the path to the OPSEC Loader framework is correct</li>
+                    <li><strong>Incompatible PE Files:</strong> Not all executables can be converted successfully</li>
+                    <li><strong>Detection Issues:</strong> Some newer EDR solutions may detect certain techniques</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>OPSEC Loader Framework Verification Tool - For Educational Purposes Only</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Feather icons
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+        });
+    </script>
+</body>
+</html>
