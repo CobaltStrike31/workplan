@@ -1,0 +1,122 @@
+{
+  "scan_id": "4613dd2b",
+  "file_info": {
+    "name": "scan_fb1cfafb42c94f92993d84706dec69a3",
+    "size": "103935 bytes (101.50 KB)",
+    "type": "Unknown",
+    "first_seen": "May 04, 2025 at 23:17:09 GMT+2",
+    "hash": "41f7b0e6d3ed338bc2e3aa4bc8d373ca31dedd555ca0ff982a100aaf62e8c715",
+    "sha1": "",
+    "md5": ""
+  },
+  "status": "Scan finished",
+  "detection_rate": "0/15",
+  "scan_date": "May 04, 2025 at 23:17:09 GMT+2",
+  "results": [
+    {
+      "av_name": "avast",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/avast.svg",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "bitdefender",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/bitdefender.svg",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "drweb",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/drweb.png",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "escan",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/escan.png",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "gdata",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/gdata.png",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "kaspersky",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/kaspersky.svg",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "mcafee",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/mcafee.svg",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "microsoft",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/microsoft.svg",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "clam",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/clam.png",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "fortinet",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/fortinet.png",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "trend",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/trend.svg",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "symantec",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/symantec.svg",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "k7",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/k7.png",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "ikarus",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/ikarus.png",
+      "timestamp": "May 04, 2025"
+    },
+    {
+      "av_name": "vba32",
+      "detection": false,
+      "detection_name": "Found nothing",
+      "logo_path": "static/images/av_logos/vba32.png",
+      "timestamp": "May 04, 2025"
+    }
+  ]
+}

@@ -31,15 +31,17 @@
                                     <select class="form-select" id="scan_type" name="scan_type">
                                         <option value="simulated" selected>Analyse simulée (rapide)</option>
                                         <option value="virustotal">VirusTotal (API externe)</option>
+                                        <option value="hybrid_analysis">Hybrid Analysis (Falcon Sandbox)</option>
+                                        <option value="metadefender">MetaDefender (OPSWAT)</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                         
                         <div id="api-key-container" class="mb-3" style="display: none;">
-                            <label for="api_key" class="form-label">Clé API VirusTotal</label>
-                            <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Entrez votre clé API VirusTotal">
-                            <div class="form-text">Requis uniquement pour l'analyse VirusTotal</div>
+                            <label for="api_key" class="form-label" id="api-key-label">Clé API</label>
+                            <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Entrez votre clé API">
+                            <div class="form-text" id="api-key-help">Requis pour l'analyse avec service externe</div>
                         </div>
                         
                         <div class="mb-3">
@@ -247,8 +249,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiKeyContainer = document.getElementById('api-key-container');
     
     scanTypeSelect.addEventListener('change', function() {
-        if (this.value === 'virustotal') {
+        const apiKeyLabel = document.getElementById('api-key-label');
+        const apiKeyHelp = document.getElementById('api-key-help');
+        const apiKeyInput = document.getElementById('api_key');
+        
+        if (this.value === 'virustotal' || this.value === 'hybrid_analysis' || this.value === 'metadefender') {
             apiKeyContainer.style.display = 'block';
+            
+            // Mise à jour du libellé et du texte d'aide en fonction du service sélectionné
+            if (this.value === 'virustotal') {
+                apiKeyLabel.textContent = 'Clé API VirusTotal';
+                apiKeyHelp.textContent = 'Requis pour l\'analyse VirusTotal';
+                apiKeyInput.placeholder = 'Entrez votre clé API VirusTotal';
+            } else if (this.value === 'hybrid_analysis') {
+                apiKeyLabel.textContent = 'Clé API Hybrid Analysis';
+                apiKeyHelp.textContent = 'Requis pour l\'analyse Hybrid Analysis';
+                apiKeyInput.placeholder = 'Entrez votre clé API Hybrid Analysis';
+            } else if (this.value === 'metadefender') {
+                apiKeyLabel.textContent = 'Clé API MetaDefender';
+                apiKeyHelp.textContent = 'Requis pour l\'analyse MetaDefender';
+                apiKeyInput.placeholder = 'Entrez votre clé API MetaDefender';
+            }
         } else {
             apiKeyContainer.style.display = 'none';
         }

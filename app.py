@@ -193,36 +193,55 @@ def process_av_scan():
         
         # Déterminer le type d'analyse à effectuer
         scan_type = request.form.get('scan_type', 'simulated')
+        api_key = request.form.get('api_key', '')
         
+        # Effectuer une analyse en fonction du type choisi
         if scan_type == 'virustotal':
             # Analyse VirusTotal
-            api_key = request.form.get('api_key', '')
             if not api_key:
                 # Nettoyer le fichier temporaire
                 os.remove(temp_file_path)
                 return jsonify({"error": "Une clé API VirusTotal est requise pour ce type d'analyse"}), 400
             
             # Obtenir un rapport VirusTotal pour le hash du fichier
-            vt_report = get_virustotal_report(api_key, file_info['hash'])
+            report = get_virustotal_report(api_key, file_info['hash'])
             
-            # Nettoyer le fichier temporaire
-            os.remove(temp_file_path)
+        elif scan_type == 'hybrid_analysis':
+            # Analyse Hybrid Analysis
+            if not api_key:
+                # Nettoyer le fichier temporaire
+                os.remove(temp_file_path)
+                return jsonify({"error": "Une clé API Hybrid Analysis est requise pour ce type d'analyse"}), 400
             
-            if 'error' in vt_report:
-                return jsonify({"error": vt_report['error']}), 400
+            # Obtenir un rapport Hybrid Analysis pour le hash du fichier
+            report = check_with_hybrid_analysis(api_key, file_info['hash'])
             
-            # Formater les résultats pour l'affichage
-            return jsonify(vt_report), 200
+        elif scan_type == 'metadefender':
+            # Analyse MetaDefender
+            if not api_key:
+                # Nettoyer le fichier temporaire
+                os.remove(temp_file_path)
+                return jsonify({"error": "Une clé API MetaDefender est requise pour ce type d'analyse"}), 400
+            
+            # Obtenir un rapport MetaDefender pour le hash du fichier
+            report = check_with_metadefender(api_key, file_info['hash'])
+            
         else:
             # Analyse simulée (dans notre backend)
             scan_id = simulate_av_scan(file_info)
             
-            # Nettoyer le fichier temporaire
-            os.remove(temp_file_path)
-            
             # Récupérer et renvoyer les résultats de l'analyse
-            scan_results = display_scan_results(scan_id)
-            return jsonify(scan_results), 200
+            report = display_scan_results(scan_id)
+        
+        # Nettoyer le fichier temporaire
+        os.remove(temp_file_path)
+        
+        # Vérifier si le rapport contient une erreur
+        if isinstance(report, dict) and 'error' in report:
+            return jsonify({"error": report['error']}), 400
+        
+        # Renvoyer les résultats
+        return jsonify(report), 200
     
     except Exception as e:
         # En cas d'erreur, nettoyer tout fichier temporaire qui pourrait avoir été créé

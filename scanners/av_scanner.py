@@ -228,6 +228,69 @@ def get_virustotal_report(api_key, file_hash):
     except Exception as e:
         return {"error": f"Error connecting to VirusTotal: {str(e)}"}
 
+def check_with_hybrid_analysis(api_key, file_hash):
+    """
+    Vérifie un fichier avec l'API Hybrid Analysis (Falcon Sandbox)
+    
+    Args:
+        api_key: API key Hybrid Analysis
+        file_hash: SHA256 hash du fichier
+        
+    Returns:
+        dict: Rapport d'analyse
+    """
+    if not api_key:
+        return {"error": "No Hybrid Analysis API key provided"}
+    
+    url = f"https://www.hybrid-analysis.com/api/v2/search/hash"
+    headers = {
+        "api-key": api_key,
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = {
+        "hash": file_hash
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, data=data)
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": f"Hybrid Analysis API error: {response.status_code}"}
+    except Exception as e:
+        return {"error": f"Error connecting to Hybrid Analysis: {str(e)}"}
+
+def check_with_metadefender(api_key, file_hash):
+    """
+    Vérifie un hash avec l'API MetaDefender Cloud (OPSWAT)
+    Cette API offre un niveau gratuit limité
+    
+    Args:
+        api_key: API key MetaDefender
+        file_hash: Hash du fichier (SHA256 recommandé)
+        
+    Returns:
+        dict: Rapport d'analyse
+    """
+    if not api_key:
+        return {"error": "No MetaDefender API key provided"}
+    
+    url = f"https://api.metadefender.com/v4/hash/{file_hash}"
+    headers = {
+        "apikey": api_key
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": f"MetaDefender API error: {response.status_code}"}
+    except Exception as e:
+        return {"error": f"Error connecting to MetaDefender: {str(e)}"}
+
 if __name__ == "__main__":
     # Test du module
     test_file = __file__  # Utiliser ce script comme fichier de test
