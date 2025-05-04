@@ -274,16 +274,40 @@ def process_encryption():
             loader_path = os.path.join(app.config['GENERATED_FILES'], loader_file_id)
             
             try:
-                # Generate the appropriate loader code
+                # Generate the appropriate loader code with the actual key
+                app.logger.info(f"Generating loader with key: {hex_key}")
+                
+                # Format the key for injection into loader
+                key_formatted = ""
                 if output_format == 'c':
-                    loader_code = generate_c_loader(encryption_method, apply_obfuscation)
+                    key_formatted = "unsigned char key[] = {\n"
+                    for i in range(0, len(key), 16):
+                        chunk = key[i:i+16]
+                        key_formatted += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
+                    key_formatted += "};\nunsigned int key_len = " + str(len(key)) + ";\n"
                 elif output_format == 'cpp':
-                    loader_code = generate_cpp_loader(encryption_method, apply_obfuscation)
+                    key_formatted = "std::uint8_t key[] = {\n"
+                    for i in range(0, len(key), 16):
+                        chunk = key[i:i+16]
+                        key_formatted += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
+                    key_formatted += "};\nconst std::size_t key_len = " + str(len(key)) + ";\n"
                 elif output_format == 'py':
-                    loader_code = generate_python_loader(encryption_method, apply_obfuscation)
+                    key_formatted = "key = bytearray([\n"
+                    for i in range(0, len(key), 16):
+                        chunk = key[i:i+16]
+                        key_formatted += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
+                    key_formatted += "])\n"
+                
+                # Generate the loader with the formatted key
+                if output_format == 'c':
+                    loader_code = generate_c_loader(encryption_method, apply_obfuscation, key_formatted)
+                elif output_format == 'cpp':
+                    loader_code = generate_cpp_loader(encryption_method, apply_obfuscation, key_formatted)
+                elif output_format == 'py':
+                    loader_code = generate_python_loader(encryption_method, apply_obfuscation, key_formatted)
                 else:
                     # Default to C loader for binary or other formats
-                    loader_code = generate_c_loader(encryption_method, apply_obfuscation)
+                    loader_code = generate_c_loader(encryption_method, apply_obfuscation, key_formatted)
                 
                 # Write the loader to file and ensure it's properly saved
                 try:
@@ -654,8 +678,14 @@ def download_file(file_id):
 
 # Helper functions for generating loaders
 
-def generate_c_loader(encryption_method, apply_obfuscation):
-    """Generate a C loader for the encrypted shellcode"""
+def generate_c_loader(encryption_method, apply_obfuscation, formatted_key=None):
+    """Generate a C loader for the encrypted shellcode
+    
+    Args:
+        encryption_method (str): The encryption method used (aes-256-cbc, aes-128-cbc, xor)
+        apply_obfuscation (bool): Whether to add obfuscation techniques
+        formatted_key (str, optional): Pre-formatted key definition to be included in the loader
+    """
     
     # Basic C loader with AES decryption
     loader = """
@@ -670,9 +700,18 @@ def generate_c_loader(encryption_method, apply_obfuscation):
 #include <unistd.h>
 #endif
 
-// Include your shellcode header here
+// Shellcode and key definition
+"""
+    
+    # Insert the formatted key if provided
+    if formatted_key:
+        loader += formatted_key + "\n"
+    else:
+        loader += """// Include your shellcode header here
 // #include "shellcode.h"
-
+"""
+    
+    loader += """
 // Decryption functions
 """
     
@@ -827,8 +866,14 @@ int check_environment() {
     
     return loader
 
-def generate_cpp_loader(encryption_method, apply_obfuscation):
-    """Generate a C++ loader for the encrypted shellcode"""
+def generate_cpp_loader(encryption_method, apply_obfuscation, formatted_key=None):
+    """Generate a C++ loader for the encrypted shellcode
+    
+    Args:
+        encryption_method (str): The encryption method used (aes-256-cbc, aes-128-cbc, xor)
+        apply_obfuscation (bool): Whether to add obfuscation techniques
+        formatted_key (str, optional): Pre-formatted key definition to be included in the loader
+    """
     
     # Basic C++ loader with AES decryption
     loader = """
@@ -1019,8 +1064,14 @@ bool check_environment() {
     
     return loader
 
-def generate_python_loader(encryption_method, apply_obfuscation):
-    """Generate a Python loader for the encrypted shellcode"""
+def generate_python_loader(encryption_method, apply_obfuscation, formatted_key=None):
+    """Generate a Python loader for the encrypted shellcode
+    
+    Args:
+        encryption_method (str): The encryption method used (aes-256-cbc, aes-128-cbc, xor)
+        apply_obfuscation (bool): Whether to add obfuscation techniques
+        formatted_key (str, optional): Pre-formatted key definition to be included in the loader
+    """
     
     # Basic Python loader
     loader = """#!/usr/bin/env python3
