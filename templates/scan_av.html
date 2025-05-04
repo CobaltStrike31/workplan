@@ -29,8 +29,9 @@
                                 <div class="mb-3">
                                     <label for="scan_type" class="form-label">Type d'analyse</label>
                                     <select class="form-select" id="scan_type" name="scan_type">
-                                        <option value="simulated" selected>Analyse simulée (rapide)</option>
-                                        <option value="apis_gratuites">Bases de données gratuites (VT, MalwareBazaar, ThreatFox)</option>
+                                        {% for scan_type, scan_name in available_scans.items() %}
+                                            <option value="{{ scan_type }}"{% if scan_type == 'simulated' %} selected{% endif %}>{{ scan_name }}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>

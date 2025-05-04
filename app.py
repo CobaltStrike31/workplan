@@ -19,8 +19,8 @@ from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from utils.security_metrics import get_security_metrics_for_ui, get_edr_bypass_stats
-from scanners.av_scanner import get_file_info, simulate_av_scan, display_scan_results
-from scanners.free_av_scanner import scan_file_with_free_apis, get_scan_results
+from scanners.av_scanner import display_scan_results
+from scanners.api_scanners import get_file_info, analyze_file, get_scan_results, get_available_scan_types
 from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
@@ -164,7 +164,9 @@ def scan_av():
     """
     Page d'analyse antivirus inspirée de premantel
     """
-    return render_template('scan_av.html')
+    # Récupérer les types de scan disponibles en fonction des clés API configurées
+    available_scans = get_available_scan_types()
+    return render_template('scan_av.html', available_scans=available_scans)
 
 @app.route('/process_av_scan', methods=['POST'])
 def process_av_scan():
@@ -196,18 +198,15 @@ def process_av_scan():
         scan_type = request.form.get('scan_type', 'simulated')
         api_key = request.form.get('api_key', '')
         
-        # Effectuer une analyse en fonction du type choisi
-        if scan_type == 'apis_gratuites':
-            # Utiliser les API gratuites sans clé
-            scan_id = scan_file_with_free_apis(temp_file_path)
-            report = get_scan_results(scan_id)
-            
+        # Effectuer une analyse avec notre module évolutif
+        scan_id_or_error = analyze_file(temp_file_path, scan_type)
+        
+        # Vérifier si nous avons un ID de scan ou une erreur
+        if isinstance(scan_id_or_error, dict) and 'error' in scan_id_or_error:
+            report = scan_id_or_error
         else:
-            # Analyse simulée (dans notre backend)
-            scan_id = simulate_av_scan(file_info)
-            
             # Récupérer et renvoyer les résultats de l'analyse
-            report = display_scan_results(scan_id)
+            report = get_scan_results(scan_id_or_error)
         
         # Nettoyer le fichier temporaire
         os.remove(temp_file_path)
