@@ -5,14 +5,17 @@ import time
 import subprocess
 import tempfile
 import shutil
+import uuid
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "opsec_loader_verification_key")
 app.config['UPLOAD_FOLDER'] = 'temp_uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB limit
+app.config['RESULTS_FOLDER'] = 'saved_results'
 
-# Create upload folder if it doesn't exist
+# Create necessary folders if they don't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
 @app.route('/')
 def index():
@@ -37,7 +40,6 @@ def verify():
         
         # Start verification process
         verification_id = str(int(time.time()))
-        session['verification_id'] = verification_id
         
         # Log the verification request
         result = {
@@ -62,7 +64,10 @@ def verify():
             result["status"] = "error"
             result["error"] = str(e)
         
-        session['verification_result'] = result
+        # Save results to a file
+        results_path = os.path.join(app.config['RESULTS_FOLDER'], f"{verification_id}.json")
+        with open(results_path, 'w') as f:
+            json.dump(result, f, indent=2)
         
         # Clean up temporary files
         if filename and os.path.exists(filename):
@@ -78,12 +83,14 @@ def verify():
 
 @app.route('/results/<verification_id>')
 def results(verification_id):
-    # Retrieve results from session
-    stored_id = session.get('verification_id')
-    result = session.get('verification_result', {})
+    # Retrieve results from file
+    results_path = os.path.join(app.config['RESULTS_FOLDER'], f"{verification_id}.json")
     
-    if not stored_id or stored_id != verification_id:
+    if not os.path.exists(results_path):
         return redirect(url_for('index'))
+    
+    with open(results_path, 'r') as f:
+        result = json.load(f)
     
     return render_template('results.html', result=result)
 
