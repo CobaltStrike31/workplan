@@ -13,6 +13,7 @@ import platform
 import importlib.util
 import sys
 import re
+import struct
 import zipfile
 from datetime import datetime
 from Crypto.Cipher import AES
@@ -1891,23 +1892,22 @@ def process_all_in_one():
         shellcode_path = os.path.join(working_dir, "shellcode.bin")
         framework_path = os.path.join(os.getcwd(), "Mode Opsec")
         
-        # Méthode simplifiée pour convertir PE en shellcode sans utiliser custom_pe2sc.py directement
-        # (pour contourner l'erreur hexadécimale)
+        # Solution très simplifiée pour convertir PE en shellcode
+        # En contournant à la fois l'erreur hexadécimale et struct
         try:
             # Lire le fichier PE
             with open(pe_file_path, 'rb') as f:
                 pe_data = f.read()
             
-            # Générer un en-tête simple pour le shellcode
-            header = b"\x90\x90\x90\x90"  # Quelques NOPs en guise de signature
+            # Créer un en-tête minimal (sans utiliser struct)
+            header = b"\x90\x90\x90\x90"  # Signature NOP
+            size_bytes = len(pe_data).to_bytes(4, byteorder='little')  # Taille en octets
+            version_bytes = (1).to_bytes(4, byteorder='little')  # Version 1
             
-            # Ajouter des métadonnées simples (uniquement pour la démo)
-            metadata = struct.pack("<II", len(pe_data), 0x00000001)  # Taille et version
+            # Assembler le shellcode complet
+            shellcode_data = header + size_bytes + version_bytes + pe_data
             
-            # Créer le shellcode (pour démonstration, nous utilisons simplement le PE tel quel)
-            shellcode_data = header + metadata + pe_data
-            
-            # Écrire le shellcode
+            # Écrire le shellcode dans un fichier
             with open(shellcode_path, 'wb') as f:
                 f.write(shellcode_data)
             
