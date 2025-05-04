@@ -27,6 +27,7 @@ waitForPort = 5000
 
 [deployment]
 run = ["sh", "-c", "pip install flask pycryptodome && python app.py"]
+deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 5000

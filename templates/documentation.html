@@ -351,8 +351,37 @@
                                 <h4 class="mb-0">Journal des mises à jour</h4>
                             </div>
                             <div class="card-body">
+                                <!-- Filtres de recherche -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Version</span>
+                                            <select class="form-select" id="version-filter">
+                                                <option value="all">Toutes les versions</option>
+                                                <option value="v1.3.0">v1.3.0</option>
+                                                <option value="v1.2.0">v1.2.0</option>
+                                                <option value="v1.1.0">v1.1.0</option>
+                                                <option value="v1.0.0">v1.0.0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Type</span>
+                                            <select class="form-select" id="type-filter">
+                                                <option value="all">Tous les types</option>
+                                                <option value="securite">Sécurité</option>
+                                                <option value="interface">Interface</option>
+                                                <option value="technique">Technique</option>
+                                                <option value="performance">Performance</option>
+                                            </select>
+                                            <button class="btn btn-primary" id="reset-filters">Réinitialiser</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-hover">
+                                    <table class="table table-bordered table-hover" id="changelog-table">
                                         <thead class="table-dark">
                                             <tr>
                                                 <th style="width: 15%">Version</th>
@@ -361,63 +390,123 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
+                                            <tr data-version="v1.3.0" data-types="securite,technique,performance">
                                                 <td><span class="badge bg-success">v1.3.0</span></td>
                                                 <td>04 Mai 2025</td>
                                                 <td>
                                                     <ul class="mb-0">
-                                                        <li>Amélioration majeure de la robustesse de tous les scripts</li>
-                                                        <li>Ajout du mécanisme HMAC-SHA256 pour vérifier l'intégrité</li>
-                                                        <li>Introduction du format v2 avec support HMAC</li>
-                                                        <li>Validation des tailles de clés avec contrôles minimaux</li>
-                                                        <li>Complétion des stubs assembleur incomplets dans DECODE_METHOD_VARIANTS</li>
-                                                        <li>Sauvegarde sécurisée avec permissions restreintes</li>
+                                                        <li data-type="performance">Amélioration majeure de la robustesse de tous les scripts</li>
+                                                        <li data-type="securite">Ajout du mécanisme HMAC-SHA256 pour vérifier l'intégrité</li>
+                                                        <li data-type="technique">Introduction du format v2 avec support HMAC</li>
+                                                        <li data-type="securite">Validation des tailles de clés avec contrôles minimaux</li>
+                                                        <li data-type="technique">Complétion des stubs assembleur incomplets dans DECODE_METHOD_VARIANTS</li>
+                                                        <li data-type="securite">Sauvegarde sécurisée avec permissions restreintes</li>
                                                     </ul>
                                                 </td>
                                             </tr>
-                                            <tr>
+                                            <tr data-version="v1.2.0" data-types="interface,technique">
                                                 <td><span class="badge bg-primary">v1.2.0</span></td>
                                                 <td>15 Avril 2025</td>
                                                 <td>
                                                     <ul class="mb-0">
-                                                        <li>Intégration directe des clés générées dans les loaders C, C++ et Python</li>
-                                                        <li>Ajout de la prise en charge de multiples formats de sortie pour les clés</li>
-                                                        <li>Amélioration de l'interface web avec mode sombre/clair</li>
-                                                        <li>Documentation complète des techniques d'évasion</li>
-                                                        <li>Ajout des coordonnées de contact (Discord, Telegram)</li>
+                                                        <li data-type="technique">Intégration directe des clés générées dans les loaders C, C++ et Python</li>
+                                                        <li data-type="technique">Ajout de la prise en charge de multiples formats de sortie pour les clés</li>
+                                                        <li data-type="interface">Amélioration de l'interface web avec mode sombre/clair</li>
+                                                        <li data-type="interface">Documentation complète des techniques d'évasion</li>
+                                                        <li data-type="interface">Ajout des coordonnées de contact (Discord, Telegram)</li>
                                                     </ul>
                                                 </td>
                                             </tr>
-                                            <tr>
+                                            <tr data-version="v1.1.0" data-types="interface,technique">
                                                 <td><span class="badge bg-secondary">v1.1.0</span></td>
                                                 <td>28 Mars 2025</td>
                                                 <td>
                                                     <ul class="mb-0">
-                                                        <li>Première version de l'interface web de test</li>
-                                                        <li>Ajout de l'encrypteur de shellcode avec AES-256-CBC</li>
-                                                        <li>Implémentation du convertisseur PE-to-Shellcode basique</li>
-                                                        <li>Support des loaders en C et C++</li>
-                                                        <li>Documentation initiale sur les techniques utilisées</li>
+                                                        <li data-type="interface">Première version de l'interface web de test</li>
+                                                        <li data-type="technique">Ajout de l'encrypteur de shellcode avec AES-256-CBC</li>
+                                                        <li data-type="technique">Implémentation du convertisseur PE-to-Shellcode basique</li>
+                                                        <li data-type="technique">Support des loaders en C et C++</li>
+                                                        <li data-type="interface">Documentation initiale sur les techniques utilisées</li>
                                                     </ul>
                                                 </td>
                                             </tr>
-                                            <tr>
+                                            <tr data-version="v1.0.0" data-types="technique,performance">
                                                 <td><span class="badge bg-secondary">v1.0.0</span></td>
                                                 <td>15 Février 2025</td>
                                                 <td>
                                                     <ul class="mb-0">
-                                                        <li>Version initiale du framework OPSEC Loader</li>
-                                                        <li>Support des techniques basiques de chargement en mémoire</li>
-                                                        <li>Fonctionnalités de base d'encodage et de chiffrement</li>
-                                                        <li>Scripts en ligne de commande uniquement</li>
+                                                        <li data-type="technique">Version initiale du framework OPSEC Loader</li>
+                                                        <li data-type="technique">Support des techniques basiques de chargement en mémoire</li>
+                                                        <li data-type="technique">Fonctionnalités de base d'encodage et de chiffrement</li>
+                                                        <li data-type="performance">Scripts en ligne de commande uniquement</li>
                                                     </ul>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
+                                <div class="alert alert-info mt-3 d-none" id="filter-info">
+                                    <span id="filter-message"></span>
+                                </div>
                             </div>
                         </div>
+                        
+                        <!-- Script pour les filtres de recherche -->
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const versionFilter = document.getElementById('version-filter');
+                            const typeFilter = document.getElementById('type-filter');
+                            const resetButton = document.getElementById('reset-filters');
+                            const filterInfo = document.getElementById('filter-info');
+                            const filterMessage = document.getElementById('filter-message');
+                            const rows = document.querySelectorAll('#changelog-table tbody tr');
+                            
+                            function applyFilters() {
+                                const selectedVersion = versionFilter.value;
+                                const selectedType = typeFilter.value;
+                                let visibleRows = 0;
+                                
+                                rows.forEach(row => {
+                                    const rowVersion = row.getAttribute('data-version');
+                                    const rowTypes = row.getAttribute('data-types').split(',');
+                                    
+                                    const versionMatch = selectedVersion === 'all' || rowVersion === selectedVersion;
+                                    const typeMatch = selectedType === 'all' || rowTypes.includes(selectedType);
+                                    
+                                    if (versionMatch && typeMatch) {
+                                        row.style.display = '';
+                                        visibleRows++;
+                                    } else {
+                                        row.style.display = 'none';
+                                    }
+                                });
+                                
+                                // Afficher un message informatif
+                                if (visibleRows === 0) {
+                                    filterInfo.classList.remove('d-none');
+                                    filterMessage.textContent = 'Aucune mise à jour ne correspond aux filtres sélectionnés.';
+                                } else if (selectedVersion !== 'all' || selectedType !== 'all') {
+                                    filterInfo.classList.remove('d-none');
+                                    let message = 'Affichage filtré : ';
+                                    if (selectedVersion !== 'all') message += 'Version = ' + selectedVersion;
+                                    if (selectedVersion !== 'all' && selectedType !== 'all') message += ' et ';
+                                    if (selectedType !== 'all') message += 'Type = ' + selectedType;
+                                    filterMessage.textContent = message + ' (' + visibleRows + ' résultat' + (visibleRows > 1 ? 's' : '') + ')';
+                                } else {
+                                    filterInfo.classList.add('d-none');
+                                }
+                            }
+                            
+                            versionFilter.addEventListener('change', applyFilters);
+                            typeFilter.addEventListener('change', applyFilters);
+                            
+                            resetButton.addEventListener('click', function() {
+                                versionFilter.value = 'all';
+                                typeFilter.value = 'all';
+                                applyFilters();
+                            });
+                        });
+                        </script>
                         
                         <div class="alert alert-warning mt-4">
                             <h5>Rappel important</h5>

@@ -9,6 +9,10 @@ import uuid
 import base64
 import random
 import string
+import platform
+import importlib.util
+import sys
+from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
@@ -144,6 +148,178 @@ def convert_pe():
 @app.route('/documentation')
 def documentation():
     return render_template('documentation.html')
+
+@app.route('/system_health')
+def system_health():
+    health_data = check_system_health()
+    return render_template('system_health.html', health_data=health_data)
+
+@app.route('/api/system_health')
+def api_system_health():
+    health_data = check_system_health()
+    return jsonify(health_data)
+
+def check_system_health():
+    """
+    Check the health status of all framework components
+    
+    Returns:
+        dict: Health status of each component
+    """
+    health_data = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "system": {
+            "os": platform.system(),
+            "platform": platform.platform(),
+            "python_version": platform.python_version(),
+            "processor": platform.processor(),
+        },
+        "components": {},
+        "overall_status": "healthy"
+    }
+    
+    # Check Python dependencies
+    dependencies = ["flask", "pycryptodome", "json", "uuid", "base64"]
+    health_data["dependencies"] = {}
+    
+    for dep in dependencies:
+        try:
+            if dep == "pycryptodome":
+                # PyCryptodome registers as Crypto
+                spec = importlib.util.find_spec("Crypto")
+                if spec is not None:
+                    health_data["dependencies"][dep] = {"status": "installed"}
+                    try:
+                        # Try to import a specific module from Crypto
+                        from Crypto.Cipher import AES
+                        health_data["dependencies"][dep]["version"] = "installed"
+                    except Exception as e:
+                        health_data["dependencies"][dep]["status"] = "error"
+                        health_data["dependencies"][dep]["error"] = str(e)
+                else:
+                    health_data["dependencies"][dep] = {"status": "not_installed"}
+            else:
+                # For standard libraries
+                if dep in sys.modules or importlib.util.find_spec(dep) is not None:
+                    health_data["dependencies"][dep] = {"status": "installed"}
+                    try:
+                        module = __import__(dep)
+                        if hasattr(module, "__version__"):
+                            health_data["dependencies"][dep]["version"] = getattr(module, "__version__")
+                        else:
+                            health_data["dependencies"][dep]["version"] = "unknown"
+                    except Exception as e:
+                        health_data["dependencies"][dep]["error"] = str(e)
+                else:
+                    health_data["dependencies"][dep] = {"status": "not_installed"}
+        except Exception as e:
+            health_data["dependencies"][dep] = {"status": "error", "error": str(e)}
+    
+    # Check framework components
+    framework_path = os.path.join(os.getcwd(), "Mode Opsec")
+    components = [
+        {"name": "custom_pe2sc", "path": os.path.join(framework_path, "custom_pe2sc.py")},
+        {"name": "encrypt_shell", "path": os.path.join(framework_path, "encrypt_shell.py")},
+        {"name": "key_formatter", "path": os.path.join(framework_path, "key_formatter_.py")},
+        {"name": "havoc_to_shellcode", "path": os.path.join(framework_path, "havoc_to_shellcode.py")}
+    ]
+    
+    for component in components:
+        health_data["components"][component["name"]] = check_component_health(component["path"])
+    
+    # Check directory structure
+    directories = [
+        {"name": "upload_folder", "path": app.config['UPLOAD_FOLDER']},
+        {"name": "results_folder", "path": app.config['RESULTS_FOLDER']},
+        {"name": "generated_files", "path": app.config['GENERATED_FILES']}
+    ]
+    
+    health_data["directories"] = {}
+    for directory in directories:
+        dir_health = {
+            "exists": os.path.exists(directory["path"]),
+            "writable": os.access(directory["path"], os.W_OK) if os.path.exists(directory["path"]) else False
+        }
+        
+        if dir_health["exists"]:
+            try:
+                # Check if we can create a temporary file
+                test_file = os.path.join(directory["path"], f"health_check_{uuid.uuid4().hex}.tmp")
+                with open(test_file, 'w') as f:
+                    f.write("health check")
+                os.remove(test_file)
+                dir_health["write_test"] = "passed"
+            except Exception as e:
+                dir_health["write_test"] = "failed"
+                dir_health["error"] = str(e)
+        
+        health_data["directories"][directory["name"]] = dir_health
+    
+    # Determine overall status
+    for component_name, component_status in health_data["components"].items():
+        if component_status["status"] != "healthy":
+            health_data["overall_status"] = "degraded"
+    
+    for dep_name, dep_status in health_data["dependencies"].items():
+        if dep_status["status"] != "installed":
+            health_data["overall_status"] = "degraded"
+    
+    for dir_name, dir_status in health_data["directories"].items():
+        if not dir_status["exists"] or not dir_status["writable"]:
+            health_data["overall_status"] = "degraded"
+    
+    return health_data
+
+def check_component_health(component_path):
+    """
+    Check the health of a specific framework component
+    
+    Args:
+        component_path (str): Path to the component file
+        
+    Returns:
+        dict: Health status of the component
+    """
+    result = {
+        "status": "missing",
+        "path": component_path
+    }
+    
+    if not os.path.exists(component_path):
+        return result
+    
+    # Check file attributes
+    file_stats = os.stat(component_path)
+    result["size"] = file_stats.st_size
+    result["modified"] = datetime.fromtimestamp(file_stats.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+    
+    try:
+        # Check if the file is properly formatted Python
+        with open(component_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+            
+        # Very basic checks for Python files
+        if not content.strip():
+            result["status"] = "empty"
+            return result
+        
+        # Check for common import lines to see if it's valid Python
+        if 'import' in content or 'def ' in content or 'class ' in content:
+            result["status"] = "healthy"
+        else:
+            result["status"] = "invalid"
+            
+        # Look for class or function definitions
+        function_count = len(re.findall(r'def\s+\w+\s*\(', content))
+        class_count = len(re.findall(r'class\s+\w+\s*(?:\(|:)', content))
+        result["functions"] = function_count
+        result["classes"] = class_count
+            
+    except Exception as e:
+        result["status"] = "error"
+        result["error"] = str(e)
+    
+    return result
 
 @app.route('/process_encryption', methods=['POST'])
 def process_encryption():
