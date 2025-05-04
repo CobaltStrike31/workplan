@@ -1,0 +1,145 @@
+Structure HTML fondamentale
+xml
+<div id="myProgress">
+  <div id="myBar">0%</div>
+</div>
+Style CSS de base
+css
+#myProgress {
+  width: 100%;
+  background-color: #dfe6e9;
+  border-radius: 15px;
+}
+
+#myBar {
+  width: 0%;
+  height: 30px;
+  background-color: #04AA6D;
+  text-align: center;
+  line-height: 30px;
+  color: white;
+  border-radius: 15px;
+}
+Cette structure permet de créer une barre simple dont la largeur peut être modifiée dynamiquement.
+
+Rendre la barre dynamique avec JavaScript
+Pour que la barre évolue en fonction des pourcentages de manière dynamique, vous devez manipuler sa largeur avec JavaScript.
+
+Animation progressive simple
+javascript
+function move() {
+  var elem = document.getElementById("myBar");
+  var width = 0;
+  var id = setInterval(frame, 10);
+  
+  function frame() {
+    if (width >= 75) { // Pourcentage cible
+      clearInterval(id);
+    } else {
+      width++;
+      elem.style.width = width + "%";
+      elem.innerHTML = width + "%";
+    }
+  }
+}
+Cette fonction animera progressivement la barre jusqu'à atteindre 75%.
+
+Connexion à des données dynamiques réelles
+Pour connecter votre barre à des données dynamiques (comme dans votre cas avec des scores de sécurité), vous devez adapter le code :
+
+javascript
+// Supposons que cette valeur provient d'une API ou d'un calcul
+var securityScore = 75; 
+
+function updateProgressBar(percentage) {
+  var progressBar = document.getElementById("myBar");
+  progressBar.style.width = percentage + "%";
+  progressBar.innerHTML = percentage + "%";
+  
+  // Ajout d'une classe conditionnelle selon le niveau
+  if (percentage >= 70) {
+    progressBar.className = "high-level";
+  } else if (percentage >= 40) {
+    progressBar.className = "medium-level";
+  } else {
+    progressBar.className = "low-level";
+  }
+}
+
+// Appeler la fonction avec le score de sécurité
+updateProgressBar(securityScore);
+Ce code permet de mettre à jour la barre en fonction d'une valeur obtenue dynamiquement.
+
+Calcul de pourcentages à partir de données brutes
+Si vous avez des données brutes (comme dans votre image avec des scores de sécurité), vous pouvez calculer les pourcentages correspondants :
+
+javascript
+// Exemple de calcul d'un pourcentage à partir de valeurs brutes
+function calculatePercentage(current, total) {
+  return Math.floor((current / total) * 100);
+}
+
+// Exemple d'utilisation
+var completedTasks = 3;
+var totalTasks = 6;
+var percentage = calculatePercentage(completedTasks, totalTasks); // Résultat : 50%
+
+updateProgressBar(percentage);
+Ce code est utile lorsque vous avez des valeurs comme un nombre de tâches complétées sur un total.
+
+Rafraîchissement en temps réel
+Pour un score en temps réel comme celui affiché dans votre image, vous devez mettre en place un mécanisme de mise à jour périodique :
+
+javascript
+// Fonction qui récupère et met à jour le score de sécurité
+function updateSecurityScore() {
+  // Simulons une récupération de données depuis une API
+  fetch('/api/security-score')
+    .then(response => response.json())
+    .then(data => {
+      updateProgressBar(data.score);
+      
+      // Mise à jour du niveau textuel
+      var levelText = document.getElementById("securityLevel");
+      levelText.textContent = data.level;
+    });
+}
+
+// Mise à jour toutes les 5 secondes
+setInterval(updateSecurityScore, 5000);
+
+// Première mise à jour immédiate
+updateSecurityScore();
+Cette approche permet de maintenir votre affichage synchronisé avec les données les plus récentes.
+
+Stylisation avancée pour des barres de progression professionnelles
+Pour obtenir un résultat similaire à l'image partagée, vous pouvez ajouter des styles avancés :
+
+css
+.progress-container {
+  margin-bottom: 10px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 30px;
+  transition: width 0.5s ease-in-out;
+  text-align: center;
+  line-height: 30px;
+  color: white;
+  font-weight: bold;
+}
+
+.progress-95 { width: 95%; background-color: #00b894; }
+.progress-90 { width: 90%; background-color: #00b894; }
+.progress-85 { width: 85%; background-color: #00b894; }
+.progress-80 { width: 80%; background-color: #00b894; }
+.progress-75 { width: 75%; background-color: #00b894; }
+
+/* Ajout d'une icône de sécurité */
+.security-icon {
+  display: inline-block;
+  margin-right: 10px;
+  color: #FFD700;
+}
