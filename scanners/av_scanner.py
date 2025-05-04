@@ -17,18 +17,18 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # Liste des antivirus et leur logo
 AV_LOGOS = {
-    "avast": "static/images/av_logos/avast.png",
-    "bitdefender": "static/images/av_logos/bitdefender.png",
+    "avast": "static/images/av_logos/avast.svg",
+    "bitdefender": "static/images/av_logos/bitdefender.svg",
     "drweb": "static/images/av_logos/drweb.png",
     "escan": "static/images/av_logos/escan.png",
     "gdata": "static/images/av_logos/gdata.png",
-    "kaspersky": "static/images/av_logos/kaspersky.png",
-    "mcafee": "static/images/av_logos/mcafee.png",
-    "microsoft": "static/images/av_logos/microsoft.png",
+    "kaspersky": "static/images/av_logos/kaspersky.svg",
+    "mcafee": "static/images/av_logos/mcafee.svg",
+    "microsoft": "static/images/av_logos/microsoft.svg",
     "clam": "static/images/av_logos/clam.png",
     "fortinet": "static/images/av_logos/fortinet.png",
-    "trend": "static/images/av_logos/trend.png",
-    "symantec": "static/images/av_logos/symantec.png",
+    "trend": "static/images/av_logos/trend.svg",
+    "symantec": "static/images/av_logos/symantec.svg",
     "k7": "static/images/av_logos/k7.png",
     "ikarus": "static/images/av_logos/ikarus.png",
     "vba32": "static/images/av_logos/vba32.png"
