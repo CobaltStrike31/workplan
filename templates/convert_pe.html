@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertir PE en Shellcode - OPSEC Loader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('index') }}">OPSEC Loader Framework</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('encrypt_payload') }}">Chiffrer Payload</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('convert_pe') }}">Convertir PE</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('documentation') }}">Documentation</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="mb-0"><i class="bi bi-arrow-repeat"></i> Conversion PE en Shellcode</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h4>Convertisseur PE → Shellcode</h4>
+                            <p>Cette interface permet de convertir un fichier exécutable PE (Portable Executable) en shellcode utilisant des techniques avancées d'évasion et l'encodage polymorphique.</p>
+                        </div>
+                        
+                        <form action="{{ url_for('process_conversion') }}" method="post" enctype="multipart/form-data" id="convert-form">
+                            <div class="mb-3">
+                                <label for="pe_file" class="form-label">Fichier PE</label>
+                                <input type="file" class="form-control" id="pe_file" name="pe_file" required>
+                                <div class="form-text">Sélectionnez un fichier PE (.exe, .dll) à convertir en shellcode</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="conversion_method" class="form-label">Méthode de conversion</label>
+                                <select class="form-select" id="conversion_method" name="conversion_method">
+                                    <option value="custom" selected>Convertisseur PE personnalisé (recommandé)</option>
+                                    <option value="reflective">Chargement réflectif standard</option>
+                                    <option value="donut">Donut (moins discret)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="encoding_method" class="form-label">Méthode d'encodage</label>
+                                <select class="form-select" id="encoding_method" name="encoding_method">
+                                    <option value="polymorphic" selected>Encodage polymorphique (recommandé)</option>
+                                    <option value="xor">XOR simple</option>
+                                    <option value="none">Aucun encodage</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="architecture" class="form-label">Architecture cible</label>
+                                <select class="form-select" id="architecture" name="architecture">
+                                    <option value="auto" selected>Détection automatique</option>
+                                    <option value="x64">x64 (64 bits)</option>
+                                    <option value="x86">x86 (32 bits)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="output_format" class="form-label">Format de sortie</label>
+                                <select class="form-select" id="output_format" name="output_format">
+                                    <option value="bin" selected>Fichier binaire (.bin)</option>
+                                    <option value="c">Code C (.h)</option>
+                                    <option value="cpp">Code C++ (.cpp)</option>
+                                    <option value="py">Code Python (.py)</option>
+                                    <option value="raw">Hexadécimal brut (.txt)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="obfuscate_output" name="obfuscate_output" checked>
+                                    <label class="form-check-label" for="obfuscate_output">Appliquer l'obfuscation avancée</label>
+                                </div>
+                                <div class="form-text">Ajoute du code inerte et modifie les patterns pour complexifier l'analyse</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="bypass_edr" name="bypass_edr" checked>
+                                    <label class="form-check-label" for="bypass_edr">Optimiser pour l'évasion EDR</label>
+                                </div>
+                                <div class="form-text">Applique des techniques spécifiques pour éviter la détection par les EDR</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="encrypt_result" name="encrypt_result">
+                                    <label class="form-check-label" for="encrypt_result">Chiffrer le résultat automatiquement</label>
+                                </div>
+                                <div class="form-text">Chiffre directement le shellcode généré avec AES-256-CBC</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-arrow-repeat"></i> Convertir le fichier PE
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                {% if conversion_result %}
+                <div class="card mt-4 shadow">
+                    <div class="card-header {{ 'bg-success' if conversion_result.success else 'bg-danger' }} text-white">
+                        <h3 class="mb-0">Résultat de la Conversion</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if conversion_result.success %}
+                            <div class="alert alert-success">
+                                <h4><i class="bi bi-check-circle-fill"></i> Conversion réussie!</h4>
+                                <p>Votre fichier PE a été converti en shellcode avec succès.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5>Détails :</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Taille originale
+                                        <span class="badge bg-primary rounded-pill">{{ conversion_result.original_size }} octets</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Taille du shellcode
+                                        <span class="badge bg-primary rounded-pill">{{ conversion_result.shellcode_size }} octets</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Architecture
+                                        <span class="badge bg-primary rounded-pill">{{ conversion_result.architecture }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Méthode d'encodage
+                                        <span class="badge bg-primary rounded-pill">{{ conversion_result.encoding_method }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5>Aperçu (premières 64 octets) :</h5>
+                                <div class="alert alert-secondary">
+                                    <code class="d-block" style="word-break: break-all;">{{ conversion_result.preview }}</code>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('download_file', file_id=conversion_result.file_id) }}" class="btn btn-success">
+                                    <i class="bi bi-download"></i> Télécharger le Shellcode
+                                </a>
+                                {% if conversion_result.encrypt_file_id %}
+                                <a href="{{ url_for('download_file', file_id=conversion_result.encrypt_file_id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-download"></i> Télécharger la Version Chiffrée
+                                </a>
+                                <div class="alert alert-warning mt-2">
+                                    <strong>Clé de chiffrement :</strong>
+                                    <div class="d-flex justify-content-between">
+                                        <code id="encryption-key-display">{{ conversion_result.encryption_key }}</code>
+                                        <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('encryption-key-display')">
+                                            <i class="bi bi-clipboard"></i> Copier
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('encrypt_payload') }}?file_id={{ conversion_result.file_id }}" class="btn btn-outline-dark">
+                                    <i class="bi bi-lock-fill"></i> Chiffrer ce shellcode
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <h4><i class="bi bi-exclamation-triangle-fill"></i> Échec de la conversion</h4>
+                                <p>{{ conversion_result.error }}</p>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" onclick="history.back()">
+                                    <i class="bi bi-arrow-left"></i> Retour
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0">Guide de Conversion</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="conversionGuideAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Méthodes de conversion
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne">
+                                    <div class="accordion-body">
+                                        <p><strong>Convertisseur PE personnalisé</strong> utilise notre implémentation qui optimise pour l'évasion EDR avec un stub assembleur personnalisé.</p>
+                                        <p><strong>Chargement réflectif standard</strong> utilise une approche plus commune mais efficace.</p>
+                                        <p><strong>Donut</strong> est inclus pour la compatibilité mais peut être plus facilement détecté.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Méthodes d'encodage
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
+                                    <div class="accordion-body">
+                                        <p><strong>Encodage polymorphique</strong> modifie la structure du shellcode à chaque génération, rendant impossibles les signatures statiques.</p>
+                                        <p><strong>XOR simple</strong> offre une obfuscation de base avec un faible impact sur la performance.</p>
+                                        <p><strong>Aucun encodage</strong> fournit le shellcode brut sans modification, non recommandé pour l'évasion.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Options d'évasion
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree">
+                                    <div class="accordion-body">
+                                        <p><strong>Obfuscation avancée</strong> ajoute:</p>
+                                        <ul>
+                                            <li>Code inerte (junk code)</li>
+                                            <li>Instructions sans effet</li>
+                                            <li>Sauts conditionnels complexes</li>
+                                        </ul>
+                                        
+                                        <p><strong>Optimisation EDR</strong> intègre:</p>
+                                        <ul>
+                                            <li>Hachage des noms d'API</li>
+                                            <li>Évitement des hooks connus</li>
+                                            <li>Masquage des patterns suspects</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingFour">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                        Formats de sortie
+                                    </button>
+                                </h2>
+                                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour">
+                                    <div class="accordion-body">
+                                        <ul>
+                                            <li><strong>Fichier binaire</strong> - Données brutes pour usage avec loaders externes</li>
+                                            <li><strong>Code C/C++</strong> - Shellcode formaté en tableau d'octets pour inclusion dans du code C/C++</li>
+                                            <li><strong>Code Python</strong> - Shellcode formaté pour utilisation dans des scripts Python</li>
+                                            <li><strong>Hexadécimal brut</strong> - Format texte avec valeurs hexadécimales</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4 shadow">
+                    <div class="card-header bg-warning text-dark">
+                        <h3 class="mb-0">Avantages de la conversion PE</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h5><i class="bi bi-shield-check text-success"></i> Avantages OPSEC</h5>
+                            <ul>
+                                <li>Exécution sans écriture sur disque</li>
+                                <li>Signature différente à chaque génération</li>
+                                <li>Absence d'en-têtes PE détectables</li>
+                                <li>Évasion des techniques de surveillance mémoire</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h5><i class="bi bi-exclamation-triangle text-warning"></i> Limitations à connaître</h5>
+                            <ul>
+                                <li>Taille du shellcode généralement plus grande que le PE</li>
+                                <li>Incompatibilité avec certains binaires complexes</li>
+                                <li>Nécessite un loader pour l'exécution finale</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <p class="mb-0"><strong>Conseil:</strong> Pour une sécurité maximale, combinez la conversion PE avec un chiffrement AES et un loader personnalisé.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer bg-dark text-light mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>OPSEC Loader Framework</h5>
+                    <p>Un outil éducatif pour comprendre les limitations des solutions antivirus</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Liens importants</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('documentation') }}" class="text-light">Documentation</a></li>
+                        <li><a href="#" class="text-light">Références techniques</a></li>
+                        <li><a href="#" class="text-light">Mesures de sécurité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="text-center">
+                <p class="mb-0">Application à but éducatif uniquement - Démonstration technique - 2025</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Créer une notification temporaire
+                const notification = document.createElement('div');
+                notification.className = 'position-fixed top-0 end-0 p-3';
+                notification.style.zIndex = '5';
+                notification.innerHTML = `
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <i class="bi bi-clipboard-check text-success me-2"></i>
+                            <strong class="me-auto">Notification</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            Clé copiée dans le presse-papiers
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Supprimer après 3 secondes
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            })
+            .catch(err => {
+                console.error('Erreur lors de la copie: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

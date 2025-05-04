@@ -3,14 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vérification OPSEC Loader</title>
+    <title>OPSEC Loader - Framework de Sécurité</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">OPSEC Loader Framework</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('index') }}">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('encrypt_payload') }}">Chiffrer Payload</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('convert_pe') }}">Convertir PE</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('documentation') }}">Documentation</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container mt-4">
         <div class="row">
-            <div class="col-md-8 offset-md-2">
+            <div class="col-md-8">
                 <div class="card shadow">
                     <div class="card-header bg-primary text-white">
                         <h2 class="mb-0">Vérification du Framework OPSEC Loader</h2>
@@ -21,7 +49,7 @@
                             <p>Cette application permet de vérifier un framework d'évasion antivirus pour une présentation éducative sur les limitations des antivirus et EDRs. <strong>Aucun code malveillant n'est exécuté</strong> pendant cette vérification.</p>
                         </div>
                         
-                        <form action="{{ url_for('verify') }}" method="post" enctype="multipart/form-data">
+                        <form action="{{ url_for('verify') }}" method="post" enctype="multipart/form-data" id="verify-form">
                             <div class="mb-3">
                                 <label for="framework_path" class="form-label">Chemin vers le Framework OPSEC Loader</label>
                                 <input type="text" class="form-control" id="framework_path" name="framework_path" value="framework/src" required>
@@ -43,8 +71,9 @@
                             </div>
                             
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Vérifier le Framework</button>
-                                <a href="{{ url_for('documentation') }}" class="btn btn-outline-secondary">Documentation</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-shield-check"></i> Vérifier le Framework
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -57,22 +86,130 @@
                     <div class="card-body">
                         <p>Le Framework OPSEC Loader est un ensemble d'outils conçus pour démontrer les techniques d'évasion des solutions de sécurité modernes dans un contexte éducatif. Il illustre pourquoi même un fichier qui passe les antivirus peut être dangereux.</p>
                         
-                        <h5>Composants principaux:</h5>
-                        <ul>
-                            <li><strong>Convertisseur PE-to-Shellcode</strong> - Transformation de binaires avec encodage polymorphique</li>
-                            <li><strong>Mécanisme de chiffrement</strong> - Protection des charges utiles avec chiffrement AES</li>
-                            <li><strong>Loader mémoire</strong> - Exécution des charges utiles sans toucher au disque</li>
-                            <li><strong>Outils de nettoyage</strong> - Effacement des traces d'opération</li>
-                        </ul>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Composants principaux:</h5>
+                                <ul>
+                                    <li><i class="bi bi-arrow-repeat text-primary"></i> <strong>Convertisseur PE-to-Shellcode</strong> - Transformation de binaires avec encodage polymorphique</li>
+                                    <li><i class="bi bi-lock-fill text-primary"></i> <strong>Mécanisme de chiffrement</strong> - Protection des charges utiles avec chiffrement AES</li>
+                                    <li><i class="bi bi-lightning-charge-fill text-primary"></i> <strong>Loader mémoire</strong> - Exécution des charges utiles sans toucher au disque</li>
+                                    <li><i class="bi bi-eraser-fill text-primary"></i> <strong>Outils de nettoyage</strong> - Effacement des traces d'opération</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Fonctionnalités disponibles:</h5>
+                                <div class="list-group">
+                                    <a href="{{ url_for('encrypt_payload') }}" class="list-group-item list-group-item-action">
+                                        <i class="bi bi-lock-fill"></i> Chiffrer une payload
+                                    </a>
+                                    <a href="{{ url_for('convert_pe') }}" class="list-group-item list-group-item-action">
+                                        <i class="bi bi-arrow-repeat"></i> Convertir PE en shellcode
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action disabled">
+                                        <i class="bi bi-cpu-fill"></i> Générer un loader (bientôt disponible)
+                                    </a>
+                                    <a href="{{ url_for('documentation') }}" class="list-group-item list-group-item-action">
+                                        <i class="bi bi-book-fill"></i> Documentation complète
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <div class="alert alert-warning">
+                        <div class="alert alert-warning mt-3">
                             <strong>Important:</strong> Cette vérification ne fait qu'analyser le framework d'un point de vue éducatif sans exécuter de code réel.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0">Accès rapide</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-3">
+                            <a href="{{ url_for('encrypt_payload') }}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-lock-fill"></i> Chiffrer une payload
+                            </a>
+                            <a href="{{ url_for('convert_pe') }}" class="btn btn-success btn-lg">
+                                <i class="bi bi-arrow-repeat"></i> Convertir PE en shellcode
+                            </a>
+                            <a href="{{ url_for('documentation') }}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-book-fill"></i> Documentation
+                            </a>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h5>Dernières mises à jour</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <span class="badge bg-primary">Nouveau</span>
+                                Interface web pour les opérations du framework
+                            </li>
+                            <li class="list-group-item">
+                                <span class="badge bg-success">Amélioration</span>
+                                Chiffrement AES-256-CBC pour une sécurité maximale
+                            </li>
+                            <li class="list-group-item">
+                                <span class="badge bg-info">Mise à jour</span>
+                                Documentation technique enrichie
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4 shadow">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="mb-0">Mesures de sécurité</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Le framework intègre plusieurs couches de sécurité pour assurer un déploiement sécurisé et discret :</p>
+                        
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 95%;" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100">Chiffrement: 95%</div>
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">Évasion EDR: 90%</div>
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">Nettoyage des traces: 85%</div>
+                        </div>
+                        
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">Efficacité globale: 80%</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <footer class="footer bg-dark text-light mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>OPSEC Loader Framework</h5>
+                    <p>Un outil éducatif pour comprendre les limitations des solutions antivirus</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Liens importants</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('documentation') }}" class="text-light">Documentation</a></li>
+                        <li><a href="#" class="text-light">Références techniques</a></li>
+                        <li><a href="#" class="text-light">Mesures de sécurité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="text-center">
+                <p class="mb-0">Application à but éducatif uniquement - Démonstration technique - 2025</p>
+            </div>
+        </div>
+    </footer>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

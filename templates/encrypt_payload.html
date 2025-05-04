@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiffrer Payload - OPSEC Loader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('index') }}">OPSEC Loader Framework</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('encrypt_payload') }}">Chiffrer Payload</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('convert_pe') }}">Convertir PE</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('documentation') }}">Documentation</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0"><i class="bi bi-lock-fill"></i> Chiffrement de Payload</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h4>Service de chiffrement</h4>
+                            <p>Cette interface permet de chiffrer une payload (shellcode) à l'aide de l'algorithme AES-256-CBC pour une protection maximale. Le résultat sera prêt à être utilisé avec le OPSEC Loader.</p>
+                        </div>
+                        
+                        <form action="{{ url_for('process_encryption') }}" method="post" enctype="multipart/form-data" id="encrypt-form">
+                            <div class="mb-3">
+                                <label for="shellcode_file" class="form-label">Fichier Shellcode</label>
+                                <input type="file" class="form-control" id="shellcode_file" name="shellcode_file" required>
+                                <div class="form-text">Sélectionnez un fichier .bin contenant votre shellcode</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="encryption_method" class="form-label">Méthode de chiffrement</label>
+                                <select class="form-select" id="encryption_method" name="encryption_method">
+                                    <option value="aes-256-cbc" selected>AES-256-CBC (recommandé)</option>
+                                    <option value="aes-128-cbc">AES-128-CBC</option>
+                                    <option value="xor">XOR (simple)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="key_generation" class="form-label">Génération de clé</label>
+                                <select class="form-select" id="key_generation" name="key_generation" onchange="togglePasswordField()">
+                                    <option value="auto" selected>Générer automatiquement</option>
+                                    <option value="manual">Utiliser ma propre clé</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3" id="password-field" style="display: none;">
+                                <label for="encryption_key" class="form-label">Clé de chiffrement</label>
+                                <input type="password" class="form-control" id="encryption_key" name="encryption_key">
+                                <div class="form-text">Pour AES-256, utilisez une clé de 32 caractères. Pour XOR, n'importe quelle taille.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="output_format" class="form-label">Format de sortie</label>
+                                <select class="form-select" id="output_format" name="output_format">
+                                    <option value="bin" selected>Fichier binaire (.bin)</option>
+                                    <option value="c">Code C (.h)</option>
+                                    <option value="cpp">Code C++ (.cpp)</option>
+                                    <option value="py">Code Python (.py)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="include_loader" name="include_loader" checked>
+                                    <label class="form-check-label" for="include_loader">Inclure un loader de base</label>
+                                </div>
+                                <div class="form-text">Génère un fichier de loader simple pour tester le shellcode chiffré</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="apply_obfuscation" name="apply_obfuscation" checked>
+                                    <label class="form-check-label" for="apply_obfuscation">Appliquer de l'obfuscation</label>
+                                </div>
+                                <div class="form-text">Ajoute des techniques d'obfuscation supplémentaires pour complexifier l'analyse</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-lock-fill"></i> Chiffrer la Payload
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                {% if encryption_result %}
+                <div class="card mt-4 shadow">
+                    <div class="card-header {{ 'bg-success' if encryption_result.success else 'bg-danger' }} text-white">
+                        <h3 class="mb-0">Résultat du Chiffrement</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if encryption_result.success %}
+                            <div class="alert alert-success">
+                                <h4><i class="bi bi-check-circle-fill"></i> Chiffrement réussi!</h4>
+                                <p>Votre payload a été chiffrée avec succès.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5>Détails :</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Taille originale
+                                        <span class="badge bg-primary rounded-pill">{{ encryption_result.original_size }} octets</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Taille chiffrée
+                                        <span class="badge bg-primary rounded-pill">{{ encryption_result.encrypted_size }} octets</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Méthode utilisée
+                                        <span class="badge bg-primary rounded-pill">{{ encryption_result.method }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5>Clé de chiffrement :</h5>
+                                <div class="alert alert-warning">
+                                    <div class="d-flex justify-content-between">
+                                        <code id="encryption-key-display">{{ encryption_result.key }}</code>
+                                        <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('encryption-key-display')">
+                                            <i class="bi bi-clipboard"></i> Copier
+                                        </button>
+                                    </div>
+                                    <div class="mt-2 small">Conservez cette clé en lieu sûr, elle sera nécessaire pour déchiffrer la payload.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('download_file', file_id=encryption_result.file_id) }}" class="btn btn-success">
+                                    <i class="bi bi-download"></i> Télécharger la Payload Chiffrée
+                                </a>
+                                {% if encryption_result.loader_file_id %}
+                                <a href="{{ url_for('download_file', file_id=encryption_result.loader_file_id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-download"></i> Télécharger le Loader
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <h4><i class="bi bi-exclamation-triangle-fill"></i> Échec du chiffrement</h4>
+                                <p>{{ encryption_result.error }}</p>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" onclick="history.back()">
+                                    <i class="bi bi-arrow-left"></i> Retour
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0">Guide du Chiffrement</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="encryptionGuideAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Choix de l'algorithme
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne">
+                                    <div class="accordion-body">
+                                        <p><strong>AES-256-CBC</strong> est recommandé pour une sécurité maximale. Il utilise une clé de 256 bits et le mode CBC (Cipher Block Chaining) pour éviter les patterns détectables.</p>
+                                        <p>L'option <strong>XOR</strong> est plus simple mais moins sécurisée, idéale pour des tests rapides uniquement.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Génération de clé
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
+                                    <div class="accordion-body">
+                                        <p>La génération automatique crée une clé cryptographiquement forte de la taille appropriée pour l'algorithme choisi.</p>
+                                        <p>Si vous utilisez votre propre clé, assurez-vous qu'elle soit suffisamment complexe et de la bonne longueur (32 caractères pour AES-256).</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Formats de sortie
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree">
+                                    <div class="accordion-body">
+                                        <ul>
+                                            <li><strong>Fichier binaire</strong> - Données brutes pour usage avec loaders externes</li>
+                                            <li><strong>Code C/C++</strong> - Payload formatée en tableau d'octets pour inclusion dans du code C/C++</li>
+                                            <li><strong>Code Python</strong> - Payload formatée pour utilisation dans des scripts Python</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingFour">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                        Options avancées
+                                    </button>
+                                </h2>
+                                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour">
+                                    <div class="accordion-body">
+                                        <p><strong>Loader inclus</strong> - Génère un fichier exécutable simple pour charger et déchiffrer la payload.</p>
+                                        <p><strong>Obfuscation</strong> - Ajoute des techniques supplémentaires pour compliquer l'analyse statique et dynamique :</p>
+                                        <ul class="small">
+                                            <li>Code factice (junk code)</li>
+                                            <li>Appels API indirects</li>
+                                            <li>Randomisation de structures</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4 shadow">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="mb-0">Mesures de Sécurité</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Le chiffrement de payload est une mesure critique pour l'OPSEC :</p>
+                        
+                        <ul>
+                            <li><i class="bi bi-shield-lock-fill text-success"></i> <strong>Protection contre l'analyse statique</strong> - La payload chiffrée est indéchiffrable sans la clé</li>
+                            <li><i class="bi bi-eye-slash-fill text-success"></i> <strong>Évasion des signatures AV</strong> - Le contenu réel est masqué aux analyses</li>
+                            <li><i class="bi bi-fingerprint text-success"></i> <strong>Réduction de l'empreinte</strong> - Minimise les caractéristiques identifiables</li>
+                            <li><i class="bi bi-card-checklist text-success"></i> <strong>Conformité OPSEC</strong> - Respect des meilleures pratiques d'opérations</li>
+                        </ul>
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Rappel important :</strong> Utilisez toujours une clé unique pour chaque opération et ne réutilisez jamais les clés entre différentes missions.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer bg-dark text-light mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>OPSEC Loader Framework</h5>
+                    <p>Un outil éducatif pour comprendre les limitations des solutions antivirus</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Liens importants</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('documentation') }}" class="text-light">Documentation</a></li>
+                        <li><a href="#" class="text-light">Références techniques</a></li>
+                        <li><a href="#" class="text-light">Mesures de sécurité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="text-center">
+                <p class="mb-0">Application à but éducatif uniquement - Démonstration technique - 2025</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePasswordField() {
+            const keyGeneration = document.getElementById('key_generation').value;
+            const passwordField = document.getElementById('password-field');
+            
+            if (keyGeneration === 'manual') {
+                passwordField.style.display = 'block';
+            } else {
+                passwordField.style.display = 'none';
+            }
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Créer une notification temporaire
+                const notification = document.createElement('div');
+                notification.className = 'position-fixed top-0 end-0 p-3';
+                notification.style.zIndex = '5';
+                notification.innerHTML = `
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <i class="bi bi-clipboard-check text-success me-2"></i>
+                            <strong class="me-auto">Notification</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            Clé copiée dans le presse-papiers
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Supprimer après 3 secondes
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            })
+            .catch(err => {
+                console.error('Erreur lors de la copie: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

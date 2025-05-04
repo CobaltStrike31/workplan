@@ -1,0 +1,127 @@
+{
+  "id": "1746392033",
+  "framework_path": "framework/src",
+  "os_type": "windows",
+  "status": "completed",
+  "timestamp": "2025-05-04 20:53:53",
+  "results": {
+    "pe_conversion": {
+      "success": true,
+      "message": "Found 2 PE conversion tools",
+      "tools_found": [
+        "custom_pe2sc.py",
+        "havoc_to_shellcode.py"
+      ],
+      "tool_analysis": {
+        "custom_pe2sc.py": {
+          "reflective_loading": true,
+          "polymorphic_encoding": true,
+          "evasion_techniques": false,
+          "size_bytes": 20736
+        },
+        "havoc_to_shellcode.py": {
+          "reflective_loading": false,
+          "polymorphic_encoding": false,
+          "evasion_techniques": false,
+          "size_bytes": 2698
+        }
+      },
+      "recommendation": "Tools appear to include necessary functionality for EDR evasion"
+    },
+    "encryption": {
+      "success": true,
+      "message": "Found 2 encryption tools",
+      "tools_found": [
+        "encrypt_shell.py",
+        "key_formatter_.py"
+      ],
+      "encryption_methods": {
+        "encrypt_shell.py": {
+          "uses_aes": true,
+          "uses_cbc_mode": true,
+          "uses_pbkdf2": true,
+          "size_bytes": 1997
+        },
+        "key_formatter_.py": {
+          "uses_aes": true,
+          "uses_cbc_mode": false,
+          "uses_pbkdf2": false,
+          "size_bytes": 9874
+        }
+      },
+      "recommendation": "Tools appear to use strong encryption methods suitable for OPSEC"
+    },
+    "memory_execution": {
+      "success": true,
+      "message": "Found 3 memory execution components",
+      "tools_found": [
+        "opsec_loader.cpp",
+        "opsec_run.sh",
+        "opsec_run.ps1"
+      ],
+      "memory_techniques": {
+        "uses_virtualalloc": true,
+        "uses_createthread": true,
+        "uses_memory_protection": true,
+        "size_bytes": 7212
+      },
+      "recommendation": "Components implement necessary memory techniques for in-memory execution"
+    },
+    "evasion": {
+      "success": true,
+      "message": "Found 2 files with evasion techniques",
+      "documentation": [
+        "DETECTION_RISKS.md",
+        "README.md"
+      ],
+      "evasion_techniques": {
+        "custom_pe2sc.py": {
+          "api_hashing": true,
+          "obfuscation": true,
+          "encryption": true
+        },
+        "encrypt_shell.py": {
+          "api_hashing": false,
+          "obfuscation": false,
+          "encryption": true
+        }
+      },
+      "recommendation": "Framework implements various evasion techniques to avoid detection"
+    },
+    "cleanup": {
+      "success": true,
+      "message": "Found 3 cleanup scripts",
+      "scripts_found": [
+        "clean_traces.sh",
+        "opsec_run.sh",
+        "opsec_run.ps1"
+      ],
+      "cleanup_actions": {
+        "clean_traces.sh": {
+          "removes_files": true,
+          "wipes_memory": false,
+          "cleans_logs": false,
+          "size_bytes": 974
+        },
+        "opsec_run.sh": {
+          "removes_files": true,
+          "wipes_memory": false,
+          "cleans_logs": false,
+          "size_bytes": 1158
+        },
+        "opsec_run.ps1": {
+          "removes_files": true,
+          "wipes_memory": false,
+          "cleans_logs": false,
+          "size_bytes": 2428
+        }
+      },
+      "recommendation": "Cleanup scripts appear to implement necessary OPSEC measures"
+    },
+    "overall": {
+      "success": true,
+      "message": "All components tested successfully",
+      "timestamp": "2025-05-04 20:53:53"
+    }
+  }
+}
