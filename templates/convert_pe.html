@@ -176,6 +176,15 @@
                                 </div>
                             </div>
                             
+                            {% if conversion_result.conversion_details %}
+                            <div class="mb-3">
+                                <h5>Détails de la conversion :</h5>
+                                <div class="alert alert-info">
+                                    <pre>{{ conversion_result.conversion_details }}</pre>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
                             <div class="d-grid gap-2">
                                 <a href="{{ url_for('download_file', file_id=conversion_result.file_id) }}" class="btn btn-success">
                                     <i class="bi bi-download"></i> Télécharger le Shellcode
