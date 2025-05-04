@@ -51,7 +51,10 @@
     <div class="container-fluid">
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">OPSEC Loader Framework</a>
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">🛡️</span>
+                    <strong>OPSEC</strong> Loader Framework
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -91,7 +94,9 @@
             <div class="col-12">
                 <div class="card shadow">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0">État de santé du système</h2>
+                        <h2 class="mb-0">
+                            <span class="me-2" style="font-size: 1.5rem;">🔍</span> État de santé du système
+                        </h2>
                         <div>
                             <span class="badge bg-light text-dark me-2">
                                 <i class="bi bi-clock"></i> 
@@ -115,7 +120,14 @@
                                 <div class="alert {{ 'alert-success' if health_data.overall_status == 'healthy' else 'alert-warning' }} d-flex align-items-center" role="alert">
                                     <div class="status-badge {{ 'status-healthy' if health_data.overall_status == 'healthy' else 'status-degraded' }}"></div>
                                     <div>
-                                        <h4 class="alert-heading">État global: {{ health_data.overall_status|capitalize }}</h4>
+                                        <h4 class="alert-heading">
+                                            {% if health_data.overall_status == 'healthy' %}
+                                                <span style="font-size: 1.5rem;">✅</span>
+                                            {% else %}
+                                                <span style="font-size: 1.5rem;">⚠️</span>
+                                            {% endif %}
+                                            État global: {{ health_data.overall_status|capitalize }}
+                                        </h4>
                                         <p class="mb-0">
                                             {% if health_data.overall_status == 'healthy' %}
                                                 Tous les composants du système fonctionnent correctement.
@@ -133,7 +145,7 @@
                             <div class="col-md-12">
                                 <div class="card border-primary component-card">
                                     <div class="card-header bg-primary text-white">
-                                        <h4 class="mb-0">Informations système</h4>
+                                        <h4 class="mb-0"><span style="font-size: 1.2rem;">💻</span> Informations système</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
@@ -180,7 +192,7 @@
                             <div class="col-md-12">
                                 <div class="card border-primary component-card">
                                     <div class="card-header bg-primary text-white">
-                                        <h4 class="mb-0">Composants du framework</h4>
+                                        <h4 class="mb-0"><span style="font-size: 1.2rem;">🧩</span> Composants du framework</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
@@ -256,7 +268,7 @@
                             <div class="col-md-12">
                                 <div class="card border-primary component-card">
                                     <div class="card-header bg-primary text-white">
-                                        <h4 class="mb-0">Dépendances</h4>
+                                        <h4 class="mb-0"><span style="font-size: 1.2rem;">📦</span> Dépendances</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
@@ -297,7 +309,7 @@
                             <div class="col-md-12">
                                 <div class="card border-primary component-card">
                                     <div class="card-header bg-primary text-white">
-                                        <h4 class="mb-0">Répertoires de travail</h4>
+                                        <h4 class="mb-0"><span style="font-size: 1.2rem;">📁</span> Répertoires de travail</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
