@@ -271,20 +271,42 @@ def process_encryption():
         loader_file_id = None
         if include_loader:
             loader_file_id = uuid.uuid4().hex
-            loader_path = os.path.join(app.config['GENERATED_FILES'], f"{loader_file_id}")
+            loader_path = os.path.join(app.config['GENERATED_FILES'], loader_file_id)
             
-            if output_format == 'c':
-                loader_code = generate_c_loader(encryption_method, apply_obfuscation)
-                with open(loader_path, 'w') as f:
-                    f.write(loader_code)
-            elif output_format == 'cpp':
-                loader_code = generate_cpp_loader(encryption_method, apply_obfuscation)
-                with open(loader_path, 'w') as f:
-                    f.write(loader_code)
-            elif output_format == 'py':
-                loader_code = generate_python_loader(encryption_method, apply_obfuscation)
-                with open(loader_path, 'w') as f:
-                    f.write(loader_code)
+            try:
+                # Generate the appropriate loader code
+                if output_format == 'c':
+                    loader_code = generate_c_loader(encryption_method, apply_obfuscation)
+                elif output_format == 'cpp':
+                    loader_code = generate_cpp_loader(encryption_method, apply_obfuscation)
+                elif output_format == 'py':
+                    loader_code = generate_python_loader(encryption_method, apply_obfuscation)
+                else:
+                    # Default to C loader for binary or other formats
+                    loader_code = generate_c_loader(encryption_method, apply_obfuscation)
+                
+                # Write the loader to file and ensure it's properly saved
+                try:
+                    app.logger.info(f"Writing loader code to: {loader_path}")
+                    
+                    with open(loader_path, 'w') as f:
+                        f.write(loader_code)
+                    
+                    # Verify the file was created
+                    if not os.path.exists(loader_path):
+                        app.logger.error(f"Loader file creation failed - file does not exist: {loader_path}")
+                        loader_file_id = None
+                    elif os.path.getsize(loader_path) == 0:
+                        app.logger.error(f"Loader file creation failed - file is empty: {loader_path}")
+                        loader_file_id = None
+                    else:
+                        app.logger.info(f"Loader file created successfully: {loader_path} (size: {os.path.getsize(loader_path)} bytes)")
+                except IOError as io_err:
+                    app.logger.error(f"IO error writing loader file: {str(io_err)}")
+                    loader_file_id = None
+            except Exception as loader_err:
+                app.logger.error(f"Error generating loader: {str(loader_err)}")
+                loader_file_id = None
         
         # Clean up temporary file
         if os.path.exists(temp_path):
@@ -571,39 +593,64 @@ def process_conversion():
 def download_file(file_id):
     try:
         # Validate the file ID to prevent directory traversal
-        if not all(c in string.hexdigits for c in file_id):
-            return jsonify({"success": False, "error": "Invalid file ID"}), 400
+        if not file_id or not all(c in string.hexdigits + '-' for c in file_id):
+            app.logger.error(f"Invalid file ID format: {file_id}")
+            return jsonify({"success": False, "error": "ID de fichier invalide"}), 400
         
         # Construct the file path
         file_path = os.path.join(app.config['GENERATED_FILES'], file_id)
+        app.logger.info(f"Attempting to download file: {file_path}")
+        
+        # Log the contents of the generated_files directory
+        files_in_dir = os.listdir(app.config['GENERATED_FILES'])
+        app.logger.info(f"Files in generated_files directory: {files_in_dir}")
         
         # Check if the file exists
         if not os.path.exists(file_path):
-            return jsonify({"success": False, "error": "File not found"}), 404
+            app.logger.error(f"File not found: {file_path}")
+            return jsonify({"success": False, "error": "Fichier non trouvé"}), 404
+        
+        # Check file size
+        file_size = os.path.getsize(file_path)
+        if file_size == 0:
+            app.logger.warning(f"File exists but is empty: {file_path}")
+        else:
+            app.logger.info(f"File size: {file_size} bytes")
         
         # Determine the file extension based on content
-        with open(file_path, 'rb') as f:
-            content = f.read(4)  # Read first few bytes to check if it's binary
+        try:
+            with open(file_path, 'rb') as f:
+                content = f.read(16)  # Read first few bytes to check file type
+                
+            # Determine filename based on content signatures
+            if content.startswith(b'#inc') or content.startswith(b'uns') or content.startswith(b'std'):
+                # C/C++ code
+                filename = "shellcode.h" if content.startswith(b'uns') else "shellcode.cpp"
+                app.logger.info(f"Identified as C/C++ code: {filename}")
+            elif content.startswith(b'imp') or content.startswith(b'def') or content.startswith(b'she') or content.startswith(b'enc'):
+                # Python code
+                filename = "shellcode.py"
+                app.logger.info(f"Identified as Python code: {filename}")
+            elif all(0x20 <= b <= 0x7E for b in content):
+                # Looks like text/hex dump
+                filename = "shellcode.txt"
+                app.logger.info(f"Identified as text: {filename}")
+            else:
+                # Binary data
+                filename = "shellcode.bin"
+                app.logger.info(f"Identified as binary: {filename}")
+        except Exception as content_err:
+            app.logger.error(f"Error reading file content: {str(content_err)}")
+            filename = "shellcode.bin"  # Default to binary
         
-        # Set the filename based on content type
-        if content.startswith(b'#inc') or content.startswith(b'uns') or content.startswith(b'std'):
-            # C/C++ code
-            filename = "shellcode.h" if content.startswith(b'uns') else "shellcode.cpp"
-        elif content.startswith(b'she') or content.startswith(b'enc'):
-            # Python code
-            filename = "shellcode.py"
-        elif all(0x20 <= b <= 0x7E for b in content):
-            # Looks like text/hex dump
-            filename = "shellcode.txt"
-        else:
-            # Binary data
-            filename = "shellcode.bin"
+        app.logger.info(f"Sending file: {file_path} as {filename}")
         
         # Send the file
         return send_file(file_path, as_attachment=True, download_name=filename)
         
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        app.logger.error(f"Error in download_file: {str(e)}")
+        return jsonify({"success": False, "error": f"Erreur lors du téléchargement: {str(e)}"}), 500
 
 # Helper functions for generating loaders
 
