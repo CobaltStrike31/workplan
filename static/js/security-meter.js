@@ -48,38 +48,45 @@ function setupDynamicSecurityMeters() {
     
     // Mettre à jour le score quand un paramètre change
     const updateSecurityScore = () => {
-        let score = 50; // Score de base
+        let baseScore = 40; // Score de base plus faible pour rendre les choix plus impactants
         
-        // Ajustement selon la méthode de chiffrement
+        // Ajustement selon la méthode de chiffrement (impact majeur)
         if (encryptionMethod.value === 'aes-256-cbc') {
-            score += 25;
+            baseScore += 30;  // Meilleure méthode = +30
         } else if (encryptionMethod.value === 'aes-128-cbc') {
-            score += 15;
+            baseScore += 20;  // Méthode bonne mais moins sécurisée = +20
         } else if (encryptionMethod.value === 'xor') {
-            score -= 15;
+            baseScore -= 10;  // Méthode simple et vulnérable = -10
         }
         
-        // Ajustement pour l'obfuscation
+        // Ajustement pour l'obfuscation (impact modéré)
         if (applyObfuscation && applyObfuscation.checked) {
-            score += 10;
+            baseScore += 15;  // L'obfuscation augmente significativement la sécurité
         } else if (applyObfuscation) {
-            score -= 10;
+            baseScore -= 15;  // Ne pas appliquer l'obfuscation = risque accru
         }
         
-        // Ajustement pour la vérification d'intégrité
+        // Ajustement pour la vérification d'intégrité (impact significatif)
         if (verifyIntegrity && verifyIntegrity.checked) {
-            score += 15;
+            baseScore += 25;  // La vérification HMAC est cruciale pour l'intégrité
         } else if (verifyIntegrity) {
-            score -= 15;
+            baseScore -= 25;  // Sans vérification d'intégrité, le risque est important
+        }
+        
+        // Vérification du mot de passe (si visible et rempli)
+        const passwordField = document.getElementById('password');
+        if (passwordField && passwordField.value) {
+            const passwordStrength = calculatePasswordStrength(passwordField.value);
+            baseScore += passwordStrength;  // Ajoute entre -10 et +15 selon la force
         }
         
         // Limiter le score entre 0 et 100
-        score = Math.max(0, Math.min(100, score));
+        baseScore = Math.max(0, Math.min(100, baseScore));
         
         // Mettre à jour le compteur si disponible
         if (securityScoreMeter) {
-            animateSecurityMeter(securityScoreMeter, score, 0, 100, false);
-            updateSecurityLabel(securityScoreMeter.nextElementSibling, score);
+            animateSecurityMeter(securityScoreMeter, baseScore, 0, 100, false);
+            updateSecurityLabel(securityScoreMeter.nextElementSibling, baseScore);
         }
     };
     
@@ -94,6 +101,21 @@ function setupDynamicSecurityMeters() {
     
     if (verifyIntegrity) {
         verifyIntegrity.addEventListener('change', updateSecurityScore);
+    }
+    
+    // Ajouter un écouteur pour le champ mot de passe
+    const passwordField = document.getElementById('password');
+    if (passwordField) {
+        passwordField.addEventListener('input', updateSecurityScore);
+        
+        // Pour le bouton de génération de mot de passe
+        const generatePasswordBtn = document.getElementById('generate-password');
+        if (generatePasswordBtn) {
+            generatePasswordBtn.addEventListener('click', () => {
+                // Attendre un instant pour que le mot de passe soit généré
+                setTimeout(updateSecurityScore, 50);
+            });
+        }
     }
     
     // Exécuter l'initialisation pour définir le score initial
@@ -144,14 +166,41 @@ function animateSecurityMeter(meterElement, targetValue, minValue, maxValue, dan
     meterElement.classList.remove('bg-danger', 'bg-warning', 'bg-info', 'bg-success');
     meterElement.classList.add(colorClass);
     
-    // Créer l'animation en CSS
+    // Créer une animation plus fluide avec requestAnimationFrame
     meterElement.style.width = '0%';
-    meterElement.style.transition = 'width 1s ease-in-out';
+    meterElement.style.transition = 'none'; // Désactiver la transition CSS
     
-    // Déclencher l'animation
-    setTimeout(() => {
-        meterElement.style.width = percentage + '%';
-    }, 100);
+    // Animation JS progressive
+    const startTime = performance.now();
+    const duration = 800; // ms, plus rapide pour une meilleure réactivité
+    
+    function animate(currentTime) {
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1);
+        
+        // Fonction d'accélération/décélération pour une animation plus naturelle
+        const easeInOutCubic = progress < 0.5 
+            ? 4 * progress * progress * progress 
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        
+        // Appliquer la largeur
+        const currentWidth = easeInOutCubic * percentage;
+        meterElement.style.width = currentWidth + '%';
+        
+        // Mettre à jour le texte de la valeur si présent
+        const valueDisplay = meterElement.querySelector('.meter-value');
+        if (valueDisplay) {
+            valueDisplay.textContent = Math.round(easeInOutCubic * targetValue);
+        }
+        
+        // Continuer l'animation si elle n'est pas terminée
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+    
+    // Démarrer l'animation
+    requestAnimationFrame(animate);
     
     // Mettre à jour l'attribut data pour future référence
     meterElement.dataset.value = targetValue;
@@ -161,6 +210,42 @@ function animateSecurityMeter(meterElement, targetValue, minValue, maxValue, dan
     if (valueDisplay) {
         valueDisplay.textContent = Math.round(targetValue);
     }
+}
+
+/**
+ * Calcule la force d'un mot de passe et renvoie un ajustement de score
+ * 
+ * @param {string} password - Le mot de passe à évaluer
+ * @return {number} - Un score entre -10 et +15 à ajouter au score de sécurité
+ */
+function calculatePasswordStrength(password) {
+    if (!password) return 0;
+    
+    let strength = 0;
+    
+    // Évaluer la longueur
+    if (password.length < 8) {
+        strength -= 5; // Trop court = risque majeur
+    } else if (password.length >= 12) {
+        strength += 5; // Bonne longueur
+    } else if (password.length >= 16) {
+        strength += 8; // Excellente longueur
+    }
+    
+    // Vérifier la présence de différents types de caractères
+    if (/[A-Z]/.test(password)) strength += 2; // Majuscules
+    if (/[a-z]/.test(password)) strength += 2; // Minuscules
+    if (/[0-9]/.test(password)) strength += 2; // Chiffres
+    if (/[^A-Za-z0-9]/.test(password)) strength += 3; // Caractères spéciaux
+    
+    // Vérifier la variété de caractères
+    const uniqueChars = new Set(password).size;
+    if (uniqueChars < password.length * 0.5) {
+        strength -= 2; // Beaucoup de répétitions
+    }
+    
+    // Limiter le résultat entre -10 et +15
+    return Math.max(-10, Math.min(15, strength));
 }
 
 /**
