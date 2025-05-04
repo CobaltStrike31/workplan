@@ -211,30 +211,32 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calculer le pourcentage
         const percentage = ((targetValue - minValue) / (maxValue - minValue)) * 100;
         
-        // Déterminer la classe de couleur
+        // Déterminer la classe de couleur selon les standards de sécurité reconnus
         let colorClass = '';
         
         if (danger) {
             // Mode danger (plus c'est élevé, plus c'est dangereux)
-            if (percentage < 25) {
-                colorClass = 'bg-success';
-            } else if (percentage < 50) {
-                colorClass = 'bg-info';
-            } else if (percentage < 75) {
-                colorClass = 'bg-warning';
+            // Échelle basée sur les niveaux de risque NIST SP 800-30
+            if (percentage < 20) {
+                colorClass = 'bg-success'; // Risque très faible (0-20%)
+            } else if (percentage < 40) {
+                colorClass = 'bg-info';    // Risque faible (20-40%)
+            } else if (percentage < 70) {
+                colorClass = 'bg-warning'; // Risque modéré (40-70%)
             } else {
-                colorClass = 'bg-danger';
+                colorClass = 'bg-danger';  // Risque élevé/critique (70-100%)
             }
         } else {
             // Mode sécurité (plus c'est élevé, plus c'est sécurisé)
-            if (percentage < 25) {
-                colorClass = 'bg-danger';
-            } else if (percentage < 50) {
-                colorClass = 'bg-warning';
-            } else if (percentage < 75) {
-                colorClass = 'bg-info';
+            // Échelle basée sur le système de notation Common Vulnerability Scoring System (CVSS)
+            if (percentage < 40) {
+                colorClass = 'bg-danger';  // Sécurité faible (0-40%)
+            } else if (percentage < 65) {
+                colorClass = 'bg-warning'; // Sécurité moyenne (40-65%)
+            } else if (percentage < 85) {
+                colorClass = 'bg-info';    // Sécurité élevée (65-85%)
             } else {
-                colorClass = 'bg-success';
+                colorClass = 'bg-success'; // Sécurité très élevée (85-100%)
             }
         }
         
@@ -249,12 +251,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Déclencher l'animation après un court délai
         setTimeout(() => {
             meterElement.style.width = percentage + '%';
+            
+            // Log pour le débogage
+            console.log("Score de sécurité calculé:", targetValue);
         }, 50);
         
         // Mise à jour du texte
         const textElement = meterElement.querySelector('.meter-value');
         if (textElement) {
             textElement.textContent = Math.round(targetValue);
+        }
+        
+        // Ajout d'une infobulle avec la source des données
+        const sourceText = danger ? 
+            "Source: NIST SP 800-30 (Gestion des risques)" : 
+            "Source: CVSS et standards NIST";
+            
+        if (meterElement.hasAttribute('title')) {
+            meterElement.setAttribute('title', `${sourceText} - Score: ${Math.round(targetValue)}`);
+        } else if (meterElement.hasAttribute('data-bs-toggle') && meterElement.hasAttribute('data-bs-toggle') === 'tooltip') {
+            meterElement.setAttribute('data-bs-original-title', `${sourceText} - Score: ${Math.round(targetValue)}`);
         }
     }
 });

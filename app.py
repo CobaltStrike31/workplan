@@ -18,6 +18,7 @@ import zipfile
 from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+from utils.security_metrics import get_security_metrics_for_ui, get_edr_bypass_stats
 from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
@@ -165,6 +166,37 @@ def system_health():
 def api_system_health():
     health_data = check_system_health()
     return jsonify(health_data)
+
+@app.route('/api/security_metrics')
+def api_security_metrics():
+    """
+    Fournit des métriques de sécurité basées sur des sources authentiques comme NIST et MITRE ATT&CK
+    """
+    # Récupérer les paramètres de la requête
+    encryption_method = request.args.get('encryption_method', 'aes-256-cbc')
+    evasion_technique = request.args.get('evasion_technique', 'pe_to_shellcode')
+    with_obfuscation = request.args.get('obfuscation', 'true').lower() == 'true'
+    with_integrity = request.args.get('integrity', 'true').lower() == 'true'
+    
+    # Définir les méthodes de nettoyage
+    cleanup_methods = ['memory_wipe', 'handle_close']
+    if request.args.get('full_cleanup', 'false').lower() == 'true':
+        cleanup_methods.extend(['thread_cleanup', 'log_cleaning'])
+    
+    # Obtenir les métriques de sécurité
+    metrics = get_security_metrics_for_ui(
+        encryption_method=encryption_method,
+        evasion_technique=evasion_technique,
+        cleanup_methods=cleanup_methods,
+        with_obfuscation=with_obfuscation,
+        with_integrity_check=with_integrity
+    )
+    
+    # Obtenir les statistiques de contournement des EDRs
+    if request.args.get('include_edr_stats', 'false').lower() == 'true':
+        metrics['edr_bypass_stats'] = get_edr_bypass_stats()
+    
+    return jsonify(metrics)
 
 def check_system_health():
     """

@@ -1,0 +1,1 @@
+# Module d'utilitaires pour l'application OPSEC Loader
