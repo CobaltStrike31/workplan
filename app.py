@@ -12,6 +12,7 @@ import string
 import platform
 import importlib.util
 import sys
+import re
 from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -248,9 +249,11 @@ def check_system_health():
                 with open(test_file, 'w') as f:
                     f.write("health check")
                 os.remove(test_file)
-                dir_health["write_test"] = "passed"
+                dir_health["write_test_status"] = True
+                dir_health["write_test"] = "passed"  # pour l'affichage
             except Exception as e:
-                dir_health["write_test"] = "failed"
+                dir_health["write_test_status"] = False
+                dir_health["write_test"] = "failed"  # pour l'affichage
                 dir_health["error"] = str(e)
         
         health_data["directories"][directory["name"]] = dir_health

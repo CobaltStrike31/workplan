@@ -30,6 +30,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('documentation') }}">Documentation</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('system_health') }}">
+                                <i class="bi bi-heart-pulse"></i> État du système
+                            </a>
+                        </li>
                     </ul>
                     <div class="theme-switch-wrapper">
                         <i class="bi bi-moon-fill theme-icon theme-icon-moon"></i>
@@ -145,6 +150,9 @@
                             </a>
                             <a href="{{ url_for('documentation') }}" class="btn btn-secondary btn-lg">
                                 <i class="bi bi-book-fill"></i> Documentation
+                            </a>
+                            <a href="{{ url_for('system_health') }}" class="btn btn-info btn-lg">
+                                <i class="bi bi-heart-pulse"></i> État du système
                             </a>
                         </div>
                         
