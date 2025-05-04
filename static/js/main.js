@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
+    // Initialiser toutes les barres de mesure de sécurité sur la page
+    initializeAllSecurityMeters();
+    
     // Gestion du formulaire de vérification
     const verifyForm = document.getElementById('verify-form');
     if (verifyForm) {
@@ -179,5 +182,79 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.addEventListener('hidden.bs.modal', function() {
             document.body.removeChild(modal);
         });
+    }
+    
+    // Fonction pour initialiser toutes les barres de sécurité sur la page
+    function initializeAllSecurityMeters() {
+        // Récupérer toutes les barres de sécurité
+        const securityMeters = document.querySelectorAll('.security-meter');
+        
+        // Initialiser chaque barre
+        securityMeters.forEach(meter => {
+            // Récupérer les valeurs à partir des attributs data
+            const value = parseFloat(meter.getAttribute('data-value') || '0');
+            const minValue = parseFloat(meter.getAttribute('data-min-value') || '0');
+            const maxValue = parseFloat(meter.getAttribute('data-max-value') || '100');
+            
+            // Déterminer si c'est une jauge de danger ou de sécurité
+            const isDanger = meter.classList.contains('danger-meter');
+            
+            // Animer la barre de sécurité
+            animateSecurityMeter(meter, value, minValue, maxValue, isDanger);
+        });
+    }
+    
+    // Fonction pour animer une barre de sécurité
+    function animateSecurityMeter(meterElement, targetValue, minValue, maxValue, danger) {
+        if (!meterElement) return;
+        
+        // Calculer le pourcentage
+        const percentage = ((targetValue - minValue) / (maxValue - minValue)) * 100;
+        
+        // Déterminer la classe de couleur
+        let colorClass = '';
+        
+        if (danger) {
+            // Mode danger (plus c'est élevé, plus c'est dangereux)
+            if (percentage < 25) {
+                colorClass = 'bg-success';
+            } else if (percentage < 50) {
+                colorClass = 'bg-info';
+            } else if (percentage < 75) {
+                colorClass = 'bg-warning';
+            } else {
+                colorClass = 'bg-danger';
+            }
+        } else {
+            // Mode sécurité (plus c'est élevé, plus c'est sécurisé)
+            if (percentage < 25) {
+                colorClass = 'bg-danger';
+            } else if (percentage < 50) {
+                colorClass = 'bg-warning';
+            } else if (percentage < 75) {
+                colorClass = 'bg-info';
+            } else {
+                colorClass = 'bg-success';
+            }
+        }
+        
+        // Mettre à jour la classe de couleur
+        meterElement.classList.remove('bg-danger', 'bg-warning', 'bg-info', 'bg-success');
+        meterElement.classList.add(colorClass);
+        
+        // Animation fluide style React
+        meterElement.style.width = '0%';
+        meterElement.style.transition = 'width 1s cubic-bezier(0.65, 0, 0.35, 1)';
+        
+        // Déclencher l'animation après un court délai
+        setTimeout(() => {
+            meterElement.style.width = percentage + '%';
+        }, 50);
+        
+        // Mise à jour du texte
+        const textElement = meterElement.querySelector('.meter-value');
+        if (textElement) {
+            textElement.textContent = Math.round(targetValue);
+        }
     }
 });

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OPSEC Loader - Framework de Sécurité{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/atom-one-dark.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid px-0">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                    <i class="bi bi-shield-lock fs-4"></i> OPSEC Loader
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('encrypt_payload') }}">
+                                <i class="bi bi-lock-fill"></i> Chiffrement
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('convert_pe') }}">
+                                <i class="bi bi-arrow-repeat"></i> PE → Shellcode
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('documentation') }}">Documentation</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('system_health') }}">
+                                <i class="bi bi-heart-pulse"></i> État du système
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('demo') }}">
+                                <i class="bi bi-play-circle-fill"></i> Démonstration
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="theme-switch-wrapper">
+                        <i class="bi bi-moon-fill theme-icon theme-icon-moon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-switch">
+                            <span class="slider"></span>
+                        </label>
+                        <i class="bi bi-sun-fill theme-icon theme-icon-sun"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <footer class="footer bg-dark text-light mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>OPSEC Loader Framework</h5>
+                    <p>Un outil éducatif pour comprendre les limitations des solutions antivirus</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Liens importants</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('documentation') }}" class="text-light">Documentation</a></li>
+                        <li><a href="#" class="text-light">Références techniques</a></li>
+                        <li><a href="#" class="text-light">Mesures de sécurité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="text-center">
+                <p class="mb-0">Application à but éducatif uniquement - Démonstration technique - 2025</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/security-meter.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>
