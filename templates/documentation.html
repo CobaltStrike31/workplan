@@ -346,6 +346,79 @@
                             </div>
                         </div>
                         
+                        <div class="card mt-4 mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h4 class="mb-0">Journal des mises à jour</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th style="width: 15%">Version</th>
+                                                <th style="width: 15%">Date</th>
+                                                <th style="width: 70%">Modifications</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-success">v1.3.0</span></td>
+                                                <td>04 Mai 2025</td>
+                                                <td>
+                                                    <ul class="mb-0">
+                                                        <li>Amélioration majeure de la robustesse de tous les scripts</li>
+                                                        <li>Ajout du mécanisme HMAC-SHA256 pour vérifier l'intégrité</li>
+                                                        <li>Introduction du format v2 avec support HMAC</li>
+                                                        <li>Validation des tailles de clés avec contrôles minimaux</li>
+                                                        <li>Complétion des stubs assembleur incomplets dans DECODE_METHOD_VARIANTS</li>
+                                                        <li>Sauvegarde sécurisée avec permissions restreintes</li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">v1.2.0</span></td>
+                                                <td>15 Avril 2025</td>
+                                                <td>
+                                                    <ul class="mb-0">
+                                                        <li>Intégration directe des clés générées dans les loaders C, C++ et Python</li>
+                                                        <li>Ajout de la prise en charge de multiples formats de sortie pour les clés</li>
+                                                        <li>Amélioration de l'interface web avec mode sombre/clair</li>
+                                                        <li>Documentation complète des techniques d'évasion</li>
+                                                        <li>Ajout des coordonnées de contact (Discord, Telegram)</li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-secondary">v1.1.0</span></td>
+                                                <td>28 Mars 2025</td>
+                                                <td>
+                                                    <ul class="mb-0">
+                                                        <li>Première version de l'interface web de test</li>
+                                                        <li>Ajout de l'encrypteur de shellcode avec AES-256-CBC</li>
+                                                        <li>Implémentation du convertisseur PE-to-Shellcode basique</li>
+                                                        <li>Support des loaders en C et C++</li>
+                                                        <li>Documentation initiale sur les techniques utilisées</li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-secondary">v1.0.0</span></td>
+                                                <td>15 Février 2025</td>
+                                                <td>
+                                                    <ul class="mb-0">
+                                                        <li>Version initiale du framework OPSEC Loader</li>
+                                                        <li>Support des techniques basiques de chargement en mémoire</li>
+                                                        <li>Fonctionnalités de base d'encodage et de chiffrement</li>
+                                                        <li>Scripts en ligne de commande uniquement</li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="alert alert-warning mt-4">
                             <h5>Rappel important</h5>
                             <p>Ce projet est strictement éducatif. Les techniques présentées sont connues des chercheurs en sécurité et des développeurs d'antivirus. Le but est d'améliorer la compréhension des faiblesses actuelles pour encourager le développement de meilleures défenses.</p>
