@@ -1,389 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Results - OPSEC Loader</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.css">
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Résultats - Vérification OPSEC Loader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <nav class="nav">
-                <h1>OPSEC Loader Framework Verification</h1>
-                <div class="nav-links">
-                    <a href="{{ url_for('index') }}">Home</a>
-                    <a href="{{ url_for('documentation') }}">Documentation</a>
-                </div>
-            </nav>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="main-content">
-            <div class="results-header">
-                <div>
-                    <h2>Verification Results</h2>
-                    <p>Verification ID: {{ result.id }}</p>
-                    <p>Timestamp: {{ result.timestamp }}</p>
-                </div>
-                
-                <div>
-                    {% if result.status == "completed" %}
-                        <span class="status-badge status-success">
-                            <i data-feather="check-circle"></i> Verification Complete
-                        </span>
-                    {% elif result.status == "error" %}
-                        <span class="status-badge status-error">
-                            <i data-feather="x-circle"></i> Verification Failed
-                        </span>
-                    {% else %}
-                        <span class="status-badge status-processing">
-                            <i data-feather="loader"></i> Processing
-                        </span>
-                    {% endif %}
-                </div>
-            </div>
-            
-            {% if result.status == "error" %}
-                <div class="alert error-box">
-                    <strong>Error:</strong> {{ result.error }}
-                </div>
-            {% endif %}
-            
-            {% if result.status == "completed" %}
-                <div class="verification-summary">
-                    <!-- PE to Shellcode Conversion -->
-                    <div class="summary-card {% if result.results.pe_conversion.success %}success{% else %}error{% endif %}">
-                        <h3>
-                            <i data-feather="code"></i> PE to Shellcode Conversion
-                        </h3>
-                        {% if result.results.pe_conversion.success %}
-                            <p><i data-feather="check"></i> Successfully verified</p>
-                        {% else %}
-                            <p><i data-feather="x"></i> Verification failed</p>
-                        {% endif %}
-                        <p>{{ result.results.pe_conversion.message }}</p>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">Résultats de vérification</h2>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-light">Retour</a>
                     </div>
-                    
-                    <!-- Encryption -->
-                    <div class="summary-card {% if result.results.encryption.success %}success{% else %}error{% endif %}">
-                        <h3>
-                            <i data-feather="lock"></i> Encryption
-                        </h3>
-                        {% if result.results.encryption.success %}
-                            <p><i data-feather="check"></i> Successfully verified</p>
-                        {% else %}
-                            <p><i data-feather="x"></i> Verification failed</p>
-                        {% endif %}
-                        <p>{{ result.results.encryption.message }}</p>
-                    </div>
-                    
-                    <!-- Memory Execution -->
-                    <div class="summary-card {% if result.results.memory_execution.success %}success{% else %}error{% endif %}">
-                        <h3>
-                            <i data-feather="cpu"></i> Memory Execution
-                        </h3>
-                        {% if result.results.memory_execution.success %}
-                            <p><i data-feather="check"></i> Successfully verified</p>
-                        {% else %}
-                            <p><i data-feather="x"></i> Verification failed</p>
-                        {% endif %}
-                        <p>{{ result.results.memory_execution.message }}</p>
-                    </div>
-                    
-                    <!-- EDR/AV Evasion -->
-                    <div class="summary-card {% if result.results.evasion.success %}success{% else %}error{% endif %}">
-                        <h3>
-                            <i data-feather="shield"></i> EDR/AV Evasion
-                        </h3>
-                        {% if result.results.evasion.success %}
-                            <p><i data-feather="check"></i> Successfully verified</p>
-                        {% else %}
-                            <p><i data-feather="x"></i> Verification failed</p>
-                        {% endif %}
-                        <p>{{ result.results.evasion.message }}</p>
-                    </div>
-                    
-                    <!-- Cleanup Validation -->
-                    <div class="summary-card {% if result.results.cleanup.success %}success{% else %}error{% endif %}">
-                        <h3>
-                            <i data-feather="trash-2"></i> Cleanup Validation
-                        </h3>
-                        {% if result.results.cleanup.success %}
-                            <p><i data-feather="check"></i> Successfully verified</p>
-                        {% else %}
-                            <p><i data-feather="x"></i> Verification failed</p>
-                        {% endif %}
-                        <p>{{ result.results.cleanup.message }}</p>
-                    </div>
-                </div>
-                
-                <!-- Detailed results section -->
-                <div class="detail-section">
-                    <h2>Detailed Results</h2>
-                    
-                    <!-- PE to Shellcode Conversion Details -->
-                    <div class="detail-container">
-                        <div class="detail-header">
-                            <h3>PE to Shellcode Conversion Details</h3>
-                            <button class="btn btn-secondary detail-toggle" data-target="pe-conversion-details">
-                                Show Details <i data-feather="chevron-down"></i>
-                            </button>
+                    <div class="card-body">
+                        {% if result %}
+                        <div class="alert {{ 'alert-success' if result.get('status') == 'completed' and result.get('results', {}).get('overall', {}).get('success') else 'alert-danger' }}">
+                            <h4>Statut: {{ result.get('status', '').upper() }}</h4>
+                            <p>
+                                {{ result.get('results', {}).get('overall', {}).get('message', '') }}
+                            </p>
+                            <p class="mb-0"><small>Identifiant: {{ result.get('id') }} - {{ result.get('timestamp') }}</small></p>
                         </div>
                         
-                        <div id="pe-conversion-details" class="detail-content" style="display: none;">
-                            <table class="detail-table">
-                                <tbody>
-                                    {% for key, value in result.results.pe_conversion.items() %}
-                                        {% if key != "success" and key != "message" %}
-                                            <tr>
-                                                <th>{{ key|replace('_', ' ')|title }}</th>
-                                                <td>
-                                                    {% if value is mapping %}
-                                                        <pre class="code-block">{{ value|tojson(indent=2) }}</pre>
-                                                    {% elif value is boolean %}
-                                                        {% if value %}
-                                                            <span class="badge success">Yes</span>
-                                                        {% else %}
-                                                            <span class="badge error">No</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {{ value }}
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        {% if result.get('status') == 'completed' %}
+                            <h3 class="mt-4">Résultats des tests par composant</h3>
                             
-                            {% if result.results.pe_conversion.polymorphic_variations %}
-                                <div class="chart-container">
-                                    <h4>Polymorphic Variations</h4>
-                                    <div class="result-chart" data-chart-type="bar" 
-                                         data-chart-data="{{ result.results.pe_conversion.polymorphic_variations|tojson }}"></div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Encryption Details -->
-                    <div class="detail-container">
-                        <div class="detail-header">
-                            <h3>Encryption Details</h3>
-                            <button class="btn btn-secondary detail-toggle" data-target="encryption-details">
-                                Show Details <i data-feather="chevron-down"></i>
-                            </button>
-                        </div>
+                            <div class="row mb-4">
+                                {% for component_name, component_result in result.get('results', {}).items() %}
+                                    {% if component_name != 'overall' %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-header {{ 'bg-success text-white' if component_result.get('success') else 'bg-danger text-white' }}">
+                                                <h5 class="mb-0">{{ component_name.replace('_', ' ').title() }}</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p>{{ component_result.get('message') }}</p>
+                                                
+                                                {% if component_result.get('tools_found') %}
+                                                <div class="mb-3">
+                                                    <h6>Outils trouvés:</h6>
+                                                    <ul>
+                                                        {% for tool in component_result.get('tools_found') %}
+                                                            <li>{{ tool }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if component_name == 'pe_conversion' and component_result.get('tool_analysis') %}
+                                                <div class="mb-3">
+                                                    <h6>Analyse des outils:</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Outil</th>
+                                                                    <th>Reflective Loading</th>
+                                                                    <th>Encodage Polymorphique</th>
+                                                                    <th>Techniques d'évasion</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for tool, analysis in component_result.get('tool_analysis').items() %}
+                                                                <tr>
+                                                                    <td>{{ tool }}</td>
+                                                                    <td>{{ '✅' if analysis.get('reflective_loading') else '❌' }}</td>
+                                                                    <td>{{ '✅' if analysis.get('polymorphic_encoding') else '❌' }}</td>
+                                                                    <td>{{ '✅' if analysis.get('evasion_techniques') else '❌' }}</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if component_name == 'encryption' and component_result.get('encryption_methods') %}
+                                                <div class="mb-3">
+                                                    <h6>Méthodes de chiffrement:</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Outil</th>
+                                                                    <th>AES</th>
+                                                                    <th>Mode CBC</th>
+                                                                    <th>PBKDF2</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for tool, methods in component_result.get('encryption_methods').items() %}
+                                                                <tr>
+                                                                    <td>{{ tool }}</td>
+                                                                    <td>{{ '✅' if methods.get('uses_aes') else '❌' }}</td>
+                                                                    <td>{{ '✅' if methods.get('uses_cbc_mode') else '❌' }}</td>
+                                                                    <td>{{ '✅' if methods.get('uses_pbkdf2') else '❌' }}</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if component_name == 'memory_execution' and component_result.get('memory_techniques') %}
+                                                <div class="mb-3">
+                                                    <h6>Techniques d'exécution mémoire:</h6>
+                                                    <ul class="list-group">
+                                                        <li class="list-group-item">
+                                                            VirtualAlloc: 
+                                                            {{ '✅' if component_result.get('memory_techniques', {}).get('uses_virtualalloc') else '❌' }}
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            CreateThread: 
+                                                            {{ '✅' if component_result.get('memory_techniques', {}).get('uses_createthread') else '❌' }}
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            Protection Mémoire: 
+                                                            {{ '✅' if component_result.get('memory_techniques', {}).get('uses_memory_protection') else '❌' }}
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if component_name == 'evasion' and component_result.get('evasion_techniques') %}
+                                                <div class="mb-3">
+                                                    <h6>Fichiers avec techniques d'évasion:</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Fichier</th>
+                                                                    <th>API Hashing</th>
+                                                                    <th>Obfuscation</th>
+                                                                    <th>Chiffrement</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for file, techniques in component_result.get('evasion_techniques').items() %}
+                                                                <tr>
+                                                                    <td>{{ file }}</td>
+                                                                    <td>{{ '✅' if techniques.get('api_hashing') else '❌' }}</td>
+                                                                    <td>{{ '✅' if techniques.get('obfuscation') else '❌' }}</td>
+                                                                    <td>{{ '✅' if techniques.get('encryption') else '❌' }}</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if component_name == 'cleanup' and component_result.get('cleanup_actions') %}
+                                                <div class="mb-3">
+                                                    <h6>Actions de nettoyage:</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Script</th>
+                                                                    <th>Suppression Fichiers</th>
+                                                                    <th>Nettoyage Mémoire</th>
+                                                                    <th>Nettoyage Logs</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for script, actions in component_result.get('cleanup_actions').items() %}
+                                                                <tr>
+                                                                    <td>{{ script }}</td>
+                                                                    <td>{{ '✅' if actions.get('removes_files') else '❌' }}</td>
+                                                                    <td>{{ '✅' if actions.get('wipes_memory') else '❌' }}</td>
+                                                                    <td>{{ '✅' if actions.get('cleans_logs') else '❌' }}</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if component_result.get('recommendation') %}
+                                                <div class="alert alert-info">
+                                                    <strong>Recommandation:</strong> {{ component_result.get('recommendation') }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                         
-                        <div id="encryption-details" class="detail-content" style="display: none;">
-                            <table class="detail-table">
-                                <tbody>
-                                    {% for key, value in result.results.encryption.items() %}
-                                        {% if key != "success" and key != "message" %}
-                                            <tr>
-                                                <th>{{ key|replace('_', ' ')|title }}</th>
-                                                <td>
-                                                    {% if value is mapping %}
-                                                        <pre class="code-block">{{ value|tojson(indent=2) }}</pre>
-                                                    {% elif value is boolean %}
-                                                        {% if value %}
-                                                            <span class="badge success">Yes</span>
-                                                        {% else %}
-                                                            <span class="badge error">No</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {{ value }}
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        {% if result.get('error') %}
+                        <div class="alert alert-danger mt-3">
+                            <h5>Erreur:</h5>
+                            <p>{{ result.get('error') }}</p>
                         </div>
-                    </div>
-                    
-                    <!-- Memory Execution Details -->
-                    <div class="detail-container">
-                        <div class="detail-header">
-                            <h3>Memory Execution Details</h3>
-                            <button class="btn btn-secondary detail-toggle" data-target="memory-execution-details">
-                                Show Details <i data-feather="chevron-down"></i>
-                            </button>
-                        </div>
+                        {% endif %}
                         
-                        <div id="memory-execution-details" class="detail-content" style="display: none;">
-                            <table class="detail-table">
-                                <tbody>
-                                    {% for key, value in result.results.memory_execution.items() %}
-                                        {% if key != "success" and key != "message" %}
-                                            <tr>
-                                                <th>{{ key|replace('_', ' ')|title }}</th>
-                                                <td>
-                                                    {% if value is mapping %}
-                                                        <pre class="code-block">{{ value|tojson(indent=2) }}</pre>
-                                                    {% elif value is boolean %}
-                                                        {% if value %}
-                                                            <span class="badge success">Yes</span>
-                                                        {% else %}
-                                                            <span class="badge error">No</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {{ value }}
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <h4>Aucun résultat disponible</h4>
+                            <p>Veuillez retourner à la page d'accueil pour lancer une vérification.</p>
                         </div>
+                        {% endif %}
                     </div>
-                    
-                    <!-- EDR/AV Evasion Details -->
-                    <div class="detail-container">
-                        <div class="detail-header">
-                            <h3>EDR/AV Evasion Details</h3>
-                            <button class="btn btn-secondary detail-toggle" data-target="evasion-details">
-                                Show Details <i data-feather="chevron-down"></i>
-                            </button>
-                        </div>
-                        
-                        <div id="evasion-details" class="detail-content" style="display: none;">
-                            <table class="detail-table">
-                                <tbody>
-                                    {% for key, value in result.results.evasion.items() %}
-                                        {% if key != "success" and key != "message" %}
-                                            <tr>
-                                                <th>{{ key|replace('_', ' ')|title }}</th>
-                                                <td>
-                                                    {% if value is mapping %}
-                                                        <pre class="code-block">{{ value|tojson(indent=2) }}</pre>
-                                                    {% elif value is boolean %}
-                                                        {% if value %}
-                                                            <span class="badge success">Yes</span>
-                                                        {% else %}
-                                                            <span class="badge error">No</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {{ value }}
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            
-                            {% if result.results.evasion.detection_rates %}
-                                <div class="chart-container">
-                                    <h4>Detection Rates</h4>
-                                    <div class="result-chart" data-chart-type="pie" 
-                                         data-chart-data="{{ result.results.evasion.detection_rates|tojson }}"></div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Cleanup Validation Details -->
-                    <div class="detail-container">
-                        <div class="detail-header">
-                            <h3>Cleanup Validation Details</h3>
-                            <button class="btn btn-secondary detail-toggle" data-target="cleanup-details">
-                                Show Details <i data-feather="chevron-down"></i>
-                            </button>
-                        </div>
-                        
-                        <div id="cleanup-details" class="detail-content" style="display: none;">
-                            <table class="detail-table">
-                                <tbody>
-                                    {% for key, value in result.results.cleanup.items() %}
-                                        {% if key != "success" and key != "message" %}
-                                            <tr>
-                                                <th>{{ key|replace('_', ' ')|title }}</th>
-                                                <td>
-                                                    {% if value is mapping %}
-                                                        <pre class="code-block">{{ value|tojson(indent=2) }}</pre>
-                                                    {% elif value is boolean %}
-                                                        {% if value %}
-                                                            <span class="badge success">Yes</span>
-                                                        {% else %}
-                                                            <span class="badge error">No</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {{ value }}
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <div class="card-footer">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary">Nouvelle vérification</a>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Export and Share Options -->
-                <div class="export-options">
-                    <h3>Export Results</h3>
-                    <p>Download or share the verification results</p>
-                    
-                    <div class="button-group">
-                        <button class="btn btn-secondary" onclick="exportResults('pdf')">
-                            <i data-feather="file-text"></i> Export as PDF
-                        </button>
-                        <button class="btn btn-secondary" onclick="exportResults('json')">
-                            <i data-feather="code"></i> Export as JSON
-                        </button>
-                        <button class="btn btn-secondary" onclick="copyResultsLink()">
-                            <i data-feather="link"></i> Copy Results Link
-                        </button>
-                    </div>
-                </div>
-            {% endif %}
-            
-            <div class="navigation-buttons">
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                    <i data-feather="arrow-left"></i> Back to Home
-                </a>
             </div>
         </div>
     </div>
     
-    <footer class="footer">
-        <div class="container">
-            <p>OPSEC Loader Framework Verification Tool - For Educational Purposes Only</p>
-        </div>
-    </footer>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script>
-        // Initialize Feather icons
-        document.addEventListener('DOMContentLoaded', function() {
-            feather.replace();
-        });
-        
-        // Export functions
-        function exportResults(format) {
-            alert('Export functionality would be implemented here: ' + format);
-            // This would be implemented with proper export functionality
-        }
-        
-        function copyResultsLink() {
-            navigator.clipboard.writeText(window.location.href)
-                .then(() => {
-                    alert('Results link copied to clipboard');
-                })
-                .catch(err => {
-                    console.error('Failed to copy: ', err);
-                    alert('Failed to copy link');
-                });
-        }
-    </script>
 </body>
 </html>

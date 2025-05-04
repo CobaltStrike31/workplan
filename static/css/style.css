@@ -1,0 +1,102 @@
+/* Style personnalisé pour l'application de vérification OPSEC Loader */
+
+body {
+    background-color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 6px;
+}
+
+.table {
+    font-size: 0.9rem;
+}
+
+/* Couleurs pour les résultats de test */
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.bg-primary {
+    background-color: #3a56a7 !important;
+}
+
+.bg-secondary {
+    background-color: #566a8c !important;
+}
+
+/* Style pour les badges et icônes */
+.badge {
+    font-size: 0.85rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Animation pour le chargement */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Style pour les résumés de composants */
+.component-summary {
+    border-left: 4px solid #3a56a7;
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+/* Style pour les cartes de résultats */
+.result-card {
+    transition: transform 0.2s;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Footer */
+.footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    background-color: #343a40;
+    color: #fff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+}

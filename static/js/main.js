@@ -1,215 +1,183 @@
+// JavaScript pour l'application de vérification OPSEC Loader
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize components
-    initFormValidation();
-    initComponentTesting();
-    initResultsVisualization();
-});
-
-/**
- * Form validation for the verification form
- */
-function initFormValidation() {
-    const verificationForm = document.getElementById('verification-form');
+    // Activer les tooltips Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
     
-    if (verificationForm) {
-        verificationForm.addEventListener('submit', function(e) {
-            const frameworkPath = document.getElementById('framework_path').value;
-            const errorContainer = document.getElementById('form-errors');
-            
-            errorContainer.innerHTML = '';
-            errorContainer.style.display = 'none';
-            
-            if (!frameworkPath.trim()) {
-                e.preventDefault();
-                errorContainer.innerHTML = 'Framework path is required';
-                errorContainer.style.display = 'block';
-                return false;
+    // Gestion du formulaire de vérification
+    const verifyForm = document.getElementById('verify-form');
+    if (verifyForm) {
+        verifyForm.addEventListener('submit', function(e) {
+            // Afficher un indicateur de chargement
+            const submitBtn = verifyForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Vérification en cours...';
+                submitBtn.disabled = true;
             }
-            
-            // Show loading state
-            const submitBtn = document.querySelector('#verification-form button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> Verifying...';
         });
     }
-}
-
-/**
- * Component testing functionality
- */
-function initComponentTesting() {
-    const componentTestBtns = document.querySelectorAll('.test-component-btn');
     
-    componentTestBtns.forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const component = this.dataset.component;
-            const frameworkPath = document.getElementById('framework_path').value;
+    // Coloration syntaxique pour les blocs de code
+    const codeBlocks = document.querySelectorAll('pre code');
+    if (codeBlocks.length > 0 && typeof hljs !== 'undefined') {
+        codeBlocks.forEach(block => {
+            hljs.highlightBlock(block);
+        });
+    }
+    
+    // Gestion des notifications
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show`;
+        notification.setAttribute('role', 'alert');
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(notification, container.firstChild);
             
-            if (!frameworkPath.trim()) {
-                alert('Please enter a framework path first');
-                return;
-            }
-            
-            // Show loading state
-            const originalText = this.innerHTML;
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner"></span> Testing...';
-            
-            try {
-                // Send API request to test component
-                const response = await fetch('/api/verify-component', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        component: component,
-                        framework_path: frameworkPath
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    displayComponentResult(component, data.data);
-                } else {
-                    throw new Error(data.message || 'Unknown error');
-                }
-            } catch (error) {
-                const resultContainer = document.getElementById(`${component}-result`);
-                if (resultContainer) {
-                    resultContainer.innerHTML = `
-                        <div class="error-message">
-                            <i class="feather icon-alert-triangle"></i>
-                            Error: ${error.message}
+            // Auto-dismiss après 5 secondes
+            setTimeout(() => {
+                const alert = new bootstrap.Alert(notification);
+                alert.close();
+            }, 5000);
+        }
+    }
+    
+    // Exposer la fonction showNotification globalement
+    window.showNotification = showNotification;
+    
+    // Fonction pour vérifier un composant spécifique via l'API
+    window.verifyComponent = function(component, frameworkPath) {
+        // Créer un modal de chargement
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'loadingModal';
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Chargement...</span>
                         </div>
-                    `;
-                }
-            } finally {
-                // Restore button state
-                this.disabled = false;
-                this.innerHTML = originalText;
-            }
-        });
-    });
-}
-
-/**
- * Display component test results
- */
-function displayComponentResult(component, data) {
-    const resultContainer = document.getElementById(`${component}-result`);
-    if (!resultContainer) return;
-    
-    let html = '<div class="component-result">';
-    
-    // Success status with icon
-    if (data.success) {
-        html += `<div class="result-status success">
-            <i class="feather icon-check-circle"></i> Component Verified
-        </div>`;
-    } else {
-        html += `<div class="result-status error">
-            <i class="feather icon-x-circle"></i> Verification Failed
-        </div>`;
-    }
-    
-    // Details table
-    html += '<table class="detail-table">';
-    html += '<tbody>';
-    
-    Object.entries(data).forEach(([key, value]) => {
-        if (key === 'success') return; // Skip the success flag, already displayed
+                        <h5>Vérification du composant ${component}...</h5>
+                        <p>Veuillez patienter pendant que nous analysons le composant.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
         
-        html += `<tr>
-            <th>${formatLabel(key)}</th>
-            <td>${formatValue(value)}</td>
-        </tr>`;
-    });
-    
-    html += '</tbody></table></div>';
-    
-    resultContainer.innerHTML = html;
-}
-
-/**
- * Format label for display (convert snake_case to Title Case)
- */
-function formatLabel(key) {
-    return key
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-}
-
-/**
- * Format value for display
- */
-function formatValue(value) {
-    if (typeof value === 'boolean') {
-        return value ? 
-            '<span class="badge success">Yes</span>' : 
-            '<span class="badge error">No</span>';
-    }
-    
-    if (typeof value === 'object' && value !== null) {
-        if (Array.isArray(value)) {
-            return value.length === 0 ? 
-                '<em>Empty array</em>' : 
-                `<ul>${value.map(item => `<li>${formatValue(item)}</li>`).join('')}</ul>`;
-        }
+        // Afficher le modal
+        const loadingModal = new bootstrap.Modal(modal);
+        loadingModal.show();
         
-        return '<pre class="code-block">' + JSON.stringify(value, null, 2) + '</pre>';
-    }
-    
-    return String(value);
-}
-
-/**
- * Results page visualization
- */
-function initResultsVisualization() {
-    const detailToggles = document.querySelectorAll('.detail-toggle');
-    
-    detailToggles.forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            const targetId = this.dataset.target;
-            const targetElement = document.getElementById(targetId);
+        // Appel API
+        fetch('/api/verify-component', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                component: component,
+                framework_path: frameworkPath
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Fermer le modal
+            loadingModal.hide();
             
-            if (targetElement) {
-                const isVisible = targetElement.style.display !== 'none';
-                targetElement.style.display = isVisible ? 'none' : 'block';
-                this.innerHTML = isVisible ? 
-                    'Show Details <i class="feather icon-chevron-down"></i>' : 
-                    'Hide Details <i class="feather icon-chevron-up"></i>';
+            if (data.status === 'success') {
+                // Afficher les résultats
+                showComponentResults(component, data.data);
+            } else {
+                // Afficher l'erreur
+                showNotification(`Erreur lors de la vérification du composant: ${data.message}`, 'danger');
             }
+        })
+        .catch(error => {
+            // Fermer le modal
+            loadingModal.hide();
+            
+            // Afficher l'erreur
+            showNotification(`Erreur: ${error.message}`, 'danger');
         });
-    });
+    };
     
-    // Initialize any charts if present
-    const chartElements = document.querySelectorAll('.result-chart');
-    
-    chartElements.forEach(chartElement => {
-        const chartType = chartElement.dataset.chartType;
-        const chartData = JSON.parse(chartElement.dataset.chartData || '{}');
+    // Fonction pour afficher les résultats d'un composant
+    function showComponentResults(component, results) {
+        // Créer un modal pour afficher les résultats
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'resultsModal';
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-hidden', 'true');
         
-        if (chartType && chartData) {
-            renderChart(chartElement, chartType, chartData);
+        // Contenu du modal (dépend du composant)
+        let modalContent = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header ${results.success ? 'bg-success' : 'bg-danger'} text-white">
+                        <h5 class="modal-title">Résultats: ${component.replace('_', ' ').toUpperCase()}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert ${results.success ? 'alert-success' : 'alert-danger'}">
+                            <h5>Status: ${results.success ? 'SUCCÈS' : 'ÉCHEC'}</h5>
+                            <p>${results.message}</p>
+                        </div>
+        `;
+        
+        // Ajouter des détails spécifiques en fonction du composant
+        if (results.tools_found) {
+            modalContent += `
+                <div class="mb-3">
+                    <h6>Outils trouvés:</h6>
+                    <ul>
+                        ${results.tools_found.map(tool => `<li>${tool}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
         }
-    });
-}
-
-/**
- * Render chart using Chart.js
- */
-function renderChart(element, type, data) {
-    // This would be implemented if using Chart.js
-    // For now, just provide a placeholder for the chart
-    if (type === 'pie') {
-        element.innerHTML = '<div class="chart-placeholder">Pie Chart Visualization</div>';
-    } else if (type === 'bar') {
-        element.innerHTML = '<div class="chart-placeholder">Bar Chart Visualization</div>';
-    } else {
-        element.innerHTML = '<div class="chart-placeholder">Chart Visualization</div>';
+        
+        // Ajouter la recommandation si elle existe
+        if (results.recommendation) {
+            modalContent += `
+                <div class="alert alert-info">
+                    <strong>Recommandation:</strong> ${results.recommendation}
+                </div>
+            `;
+        }
+        
+        // Fermer les balises
+        modalContent += `
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        modal.innerHTML = modalContent;
+        document.body.appendChild(modal);
+        
+        // Afficher le modal
+        const resultsModal = new bootstrap.Modal(modal);
+        resultsModal.show();
+        
+        // Supprimer le modal une fois fermé
+        modal.addEventListener('hidden.bs.modal', function() {
+            document.body.removeChild(modal);
+        });
     }
-}
+});
