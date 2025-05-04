@@ -154,6 +154,13 @@ def convert_pe():
 @app.route('/documentation')
 def documentation():
     return render_template('documentation.html')
+    
+@app.route('/security_metrics_demo')
+def security_metrics_demo():
+    """
+    Page de démonstration des métriques de sécurité avec les barres de progression améliorées
+    """
+    return render_template('security_metrics_demo.html')
 
 @app.route('/demo')
 def demo():

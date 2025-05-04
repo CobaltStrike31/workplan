@@ -1,0 +1,186 @@
+/**
+ * Styles pour les barres de progression améliorées
+ * Basé sur la structure HTML fondamentale avec div#myProgress > div#myBar
+ */
+
+/* Conteneur principal de la barre de progression */
+.progress-container {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Titre de la section */
+.progress-title {
+  color: #fff;
+  background-color: #0984e3;
+  padding: 8px 15px;
+  margin: 0;
+  border-radius: 4px 4px 0 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.progress-title i {
+  margin-right: 8px;
+}
+
+/* Zone de texte d'explication */
+.progress-explanation {
+  font-size: 0.85rem;
+  color: #7a7a7a;
+  margin: 5px 0 15px 0;
+}
+
+/* Conteneur externe de la barre (fond gris) */
+.progress-bar-container {
+  width: 100%;
+  background-color: #dfe6e9;
+  border-radius: 15px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+/* Barre de progression interne avec animation */
+.progress-bar {
+  height: 30px;
+  text-align: center;
+  line-height: 30px;
+  color: white;
+  font-weight: bold;
+  border-radius: 15px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+/* Couleurs des barres selon le niveau */
+.progress-bar-95, .progress-bar-90 {
+  background-color: #00b894;
+}
+
+.progress-bar-85, .progress-bar-80 {
+  background-color: #00cec9;
+}
+
+.progress-bar-75, .progress-bar-70 {
+  background-color: #74b9ff;
+}
+
+.progress-bar-65, .progress-bar-60 {
+  background-color: #a29bfe;
+}
+
+.progress-bar-55, .progress-bar-50 {
+  background-color: #ffeaa7;
+}
+
+.progress-bar-45, .progress-bar-40 {
+  background-color: #fab1a0;
+}
+
+.progress-bar-35, .progress-bar-30, .progress-bar-25, .progress-bar-20, .progress-bar-15, .progress-bar-10, .progress-bar-5 {
+  background-color: #ff7675;
+}
+
+/* Section pour le score en temps réel */
+.realtime-score {
+  border: 1px solid #2980b9;
+  border-radius: 5px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.realtime-score-header {
+  background-color: #2980b9;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.realtime-score-header i {
+  margin-right: 8px;
+}
+
+.realtime-score-content {
+  padding: 15px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.realtime-score-bar-container {
+  flex-grow: 1;
+  margin-right: 15px;
+}
+
+.realtime-score-level {
+  font-weight: bold;
+  min-width: 100px;
+  text-align: center;
+}
+
+.level-elevated {
+  color: #27ae60;
+}
+
+.level-moderate {
+  color: #2980b9;
+}
+
+.level-reduced {
+  color: #d35400;
+}
+
+.level-minimal {
+  color: #c0392b;
+}
+
+/* Animation d'apparition */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.progress-container {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Badge indicateur de sécurité */
+.security-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.badge-high {
+  background-color: #27ae60;
+  color: white;
+}
+
+.badge-medium {
+  background-color: #3498db;
+  color: white;
+}
+
+.badge-low {
+  background-color: #e67e22;
+  color: white;
+}
+
+.badge-critical {
+  background-color: #e74c3c;
+  color: white;
+}
+
+/* Icône de sécurité */
+.security-icon {
+  margin-left: auto;
+  font-size: 1.5rem;
+  color: #2c3e50;
+}

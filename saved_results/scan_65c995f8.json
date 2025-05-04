@@ -1,0 +1,23 @@
+{
+  "scan_id": "65c995f8",
+  "file_info": {
+    "name": "scan_67fa352521064a39a4a46a37c86b34c2",
+    "size": "103935 bytes (101.50 KB)",
+    "type": "Fichier inconnu",
+    "first_seen": "May 04, 2025 at 23:51:38 GMT+2",
+    "hash": "41f7b0e6d3ed338bc2e3aa4bc8d373ca31dedd555ca0ff982a100aaf62e8c715",
+    "sha1": "b6a1f800ab85a7ea22260db90c124bbfb327d104",
+    "md5": "cc7a51ae40359979fc3ae3c6821df6af"
+  },
+  "status": "Scan finished",
+  "detection_rate": "1/1",
+  "scan_date": "May 04, 2025 at 23:51:39 GMT+2",
+  "results": [
+    {
+      "av_name": "VirusTotal",
+      "detection": true,
+      "detection_name": "Fichier trouv\u00e9 dans la base de donn\u00e9es",
+      "logo_path": "static/images/av_logos/default.png"
+    }
+  ]
+}

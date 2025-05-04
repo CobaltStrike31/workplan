@@ -1,0 +1,24 @@
+{
+  "scan_id": "969a4187",
+  "file_info": {
+    "hash": "41f7b0e6d3ed338bc2e3aa4bc8d373ca31dedd555ca0ff982a100aaf62e8c715",
+    "name": "Unknown",
+    "size": "Unknown",
+    "type": "Unknown",
+    "first_seen": "N/A",
+    "md5": "",
+    "sha1": ""
+  },
+  "status": "File not found",
+  "detection_rate": "0/0",
+  "scan_date": "May 04, 2025 at 23:51:14 GMT+2",
+  "results": [
+    {
+      "av_name": "VirusTotal",
+      "detection": false,
+      "detection_name": "Fichier non trouv\u00e9 dans la base de donn\u00e9es",
+      "logo_path": "static/images/av_logos/default.png",
+      "timestamp": "May 04, 2025"
+    }
+  ]
+}

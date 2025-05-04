@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}Métriques de Sécurité{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Métriques de Sécurité</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Le framework intègre plusieurs couches de sécurité pour assurer un déploiement sécurisé et discret.
+                    </p>
+                    
+                    <!-- Barres de progression style amélioré -->
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <!-- Barre 1 -->
+                            <div class="progress-container">
+                                <div id="myProgress">
+                                    <div id="bar95" class="progress-bar progress-bar-95" style="width: 95%">95%</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Barre 2 -->
+                            <div class="progress-container">
+                                <div id="myProgress">
+                                    <div id="bar90" class="progress-bar progress-bar-90" style="width: 90%">90%</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Barre 3 -->
+                            <div class="progress-container">
+                                <div id="myProgress">
+                                    <div id="bar85" class="progress-bar progress-bar-85" style="width: 85%">85%</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Barre 4 -->
+                            <div class="progress-container">
+                                <div id="myProgress">
+                                    <div id="bar80" class="progress-bar progress-bar-80" style="width: 80%">80%</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Score en temps réel -->
+                            <div class="realtime-score mt-5">
+                                <div class="realtime-score-header">
+                                    <i class="bi bi-activity"></i> Score de sécurité en temps réel
+                                </div>
+                                <div class="realtime-score-content">
+                                    <div class="realtime-score-bar-container">
+                                        <div id="myProgress">
+                                            <div id="barRealtime" class="progress-bar progress-bar-75" style="width: 75%">75%</div>
+                                        </div>
+                                    </div>
+                                    <div class="realtime-score-level level-elevated">
+                                        <i class="bi bi-shield-check"></i>
+                                        <span>Niveau de sécurité élevé</span>
+                                    </div>
+                                </div>
+                                <div class="realtime-score-footer p-2">
+                                    <small class="text-muted">Ce score est calculé d'après les paramètres actuels et les fonctionnalités activées.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panneau de configuration pour tester les barres -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0"><i class="bi bi-sliders me-2"></i>Configurer le niveau de sécurité</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="encryption-method">Méthode de chiffrement</label>
+                                <select class="form-select" id="encryption-method">
+                                    <option value="95">AES-256-CBC (Maximum)</option>
+                                    <option value="85">AES-128-CBC (Standard)</option>
+                                    <option value="60">XOR (Basique)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="evasion-technique">Technique d'évasion</label>
+                                <select class="form-select" id="evasion-technique">
+                                    <option value="90">PE à Shellcode (Avancé)</option>
+                                    <option value="75">Réflectif (Standard)</option>
+                                    <option value="50">Direct (Basique)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check mb-3 mt-2">
+                                <input class="form-check-input" type="checkbox" id="obfuscation" checked>
+                                <label class="form-check-label" for="obfuscation">
+                                    Appliquer l'obfuscation
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="integrity-check" checked>
+                                <label class="form-check-label" for="integrity-check">
+                                    Vérification d'intégrité (HMAC)
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="full-cleanup" checked>
+                                <label class="form-check-label" for="full-cleanup">
+                                    Nettoyage complet en mémoire
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button id="update-security" class="btn btn-primary">
+                            <i class="bi bi-arrow-repeat me-2"></i>Mettre à jour le score de sécurité
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/progress-bars.css') }}">
+<style>
+    #myProgress {
+        width: 100%;
+        background-color: #dfe6e9;
+        border-radius: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .progress-bar {
+        width: 0%;
+        height: 30px;
+        text-align: center;
+        line-height: 30px;
+        color: white;
+        font-weight: bold;
+        border-radius: 15px;
+        transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animer les barres au chargement de la page
+    animateProgressBar('bar95', 95);
+    animateProgressBar('bar90', 90);
+    animateProgressBar('bar85', 85);
+    animateProgressBar('bar80', 80);
+    animateProgressBar('barRealtime', 75);
+    
+    // Configurer les listeners pour le panneau de configuration
+    setupSecurityControls();
+});
+
+function animateProgressBar(id, targetPercent) {
+    const bar = document.getElementById(id);
+    let width = 0;
+    const duration = 1000; // ms
+    const fps = 60;
+    const frames = duration / (1000 / fps);
+    const increment = targetPercent / frames;
+    
+    const animation = setInterval(function() {
+        if (width >= targetPercent) {
+            clearInterval(animation);
+        } else {
+            // Utiliser une fonction d'easing pour un effet plus naturel
+            width += increment;
+            if (width > targetPercent) width = targetPercent;
+            
+            bar.style.width = width + '%';
+            bar.textContent = Math.round(width) + '%';
+        }
+    }, 1000 / fps);
+}
+
+function setupSecurityControls() {
+    const updateButton = document.getElementById('update-security');
+    if (!updateButton) return;
+    
+    updateButton.addEventListener('click', function() {
+        // Récupérer les valeurs du formulaire
+        const encryptionValue = parseInt(document.getElementById('encryption-method').value);
+        const evasionValue = parseInt(document.getElementById('evasion-technique').value);
+        
+        const obfuscation = document.getElementById('obfuscation').checked;
+        const integrityCheck = document.getElementById('integrity-check').checked;
+        const fullCleanup = document.getElementById('full-cleanup').checked;
+        
+        // Calculer le score de sécurité
+        let score = (encryptionValue + evasionValue) / 2;
+        
+        // Ajustements basés sur les options
+        if (!obfuscation) score -= 10;
+        if (!integrityCheck) score -= 15;
+        if (!fullCleanup) score -= 5;
+        
+        // Limiter le score entre 0 et 100
+        score = Math.max(0, Math.min(100, score));
+        
+        // Mettre à jour la barre en temps réel
+        const realtimeBar = document.getElementById('barRealtime');
+        realtimeBar.style.width = "0%";
+        realtimeBar.className = `progress-bar progress-bar-${Math.floor(score / 5) * 5}`;
+        
+        // Animer vers la nouvelle valeur
+        animateProgressBar('barRealtime', score);
+        
+        // Mettre à jour le niveau de sécurité
+        updateSecurityLevel(score);
+    });
+}
+
+function updateSecurityLevel(score) {
+    const levelElement = document.querySelector('.realtime-score-level');
+    
+    // Réinitialiser les classes
+    levelElement.className = 'realtime-score-level';
+    
+    // Définir le niveau en fonction du score
+    if (score >= 80) {
+        levelElement.classList.add('level-elevated');
+        levelElement.innerHTML = '<i class="bi bi-shield-check"></i> <span>Niveau de sécurité élevé</span>';
+    } else if (score >= 60) {
+        levelElement.classList.add('level-moderate');
+        levelElement.innerHTML = '<i class="bi bi-shield"></i> <span>Niveau de sécurité modéré</span>';
+    } else if (score >= 40) {
+        levelElement.classList.add('level-reduced');
+        levelElement.innerHTML = '<i class="bi bi-shield-exclamation"></i> <span>Niveau de sécurité réduit</span>';
+    } else {
+        levelElement.classList.add('level-minimal');
+        levelElement.innerHTML = '<i class="bi bi-shield-x"></i> <span>Niveau de sécurité minimal</span>';
+    }
+}
+</script>
+{% endblock %}
