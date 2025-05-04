@@ -34,35 +34,139 @@
                         </div>
                         
                         <h3>Le Framework OPSEC Loader</h3>
-                        <p>Le framework OPSEC Loader est un ensemble d'outils permettant de démontrer comment certaines techniques peuvent contourner les systèmes de détection. Ce vérificateur analyse les composants sans exécuter de code réel.</p>
+                        <p>Le framework OPSEC Loader est un ensemble d'outils avancés conçus pour démontrer les limites des solutions de sécurité modernes. À des fins purement éducatives, il illustre comment certaines techniques peuvent contourner les systèmes de détection. Cette application analyse les composants sans exécuter de code malveillant.</p>
                         
                         <div class="row mt-4">
+                            <div class="col-md-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h4 class="mb-0">Composants principaux du framework</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card mb-3">
+                                                    <div class="card-header bg-primary text-white">
+                                                        <h5 class="mb-0">custom_pe2sc.py</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p>Convertisseur PE vers Shellcode avec techniques d'évasion avancées</p>
+                                                        <ul>
+                                                            <li>Transforme les exécutables PE en shellcode position-indépendant</li>
+                                                            <li>Utilise un encodage polymorphique pour éviter les signatures</li>
+                                                            <li>Implémente 4 méthodes d'encodage différentes :
+                                                                <ul>
+                                                                    <li>XOR avec clé rotative</li>
+                                                                    <li>ADD/SUB avec table de sauts</li>
+                                                                    <li>NOT + XOR + ROL</li>
+                                                                    <li>Encodage basé sur position + delta</li>
+                                                                </ul>
+                                                            </li>
+                                                            <li>Génère automatiquement des stubs d'assembleur fonctionnels</li>
+                                                            <li>Intègre un chargeur réflectif complet</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="card mb-3">
+                                                    <div class="card-header bg-primary text-white">
+                                                        <h5 class="mb-0">encrypt_shell.py</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p>Module de chiffrement pour shellcode avec multiples algorithmes</p>
+                                                        <ul>
+                                                            <li>Supporte plusieurs méthodes de chiffrement :
+                                                                <ul>
+                                                                    <li>AES-256-CBC (mode par défaut)</li>
+                                                                    <li>AES-128-CBC (plus rapide)</li>
+                                                                    <li>XOR (simple mais détectable)</li>
+                                                                </ul>
+                                                            </li>
+                                                            <li>Génération de clés cryptographiques sécurisées</li>
+                                                            <li>Exportation en différents formats (binaire, C/C++, Python)</li>
+                                                            <li>Compatible avec les techniques anti-sandboxing</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card mb-3">
+                                                    <div class="card-header bg-primary text-white">
+                                                        <h5 class="mb-0">havoc_to_shellcode.py</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p>Script de compatibilité pour workflows existants</p>
+                                                        <ul>
+                                                            <li>Assure la compatibilité avec d'anciens scripts</li>
+                                                            <li>Intègre des fonctions de modification pour casser les signatures</li>
+                                                            <li>Exécute les processus sans traces identifiables</li>
+                                                            <li>Sert de pont entre différents outils du framework</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header bg-primary text-white">
+                                                        <h5 class="mb-0">key_formatter_.py</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p>Utilitaire de formatage de clés cryptographiques</p>
+                                                        <ul>
+                                                            <li>Génère des clés sans métadonnées identifiables</li>
+                                                            <li>Supporte différents formats de sortie :
+                                                                <ul>
+                                                                    <li>C/C++ (tableaux d'octets)</li>
+                                                                    <li>Python (bytearrays)</li>
+                                                                    <li>Hexadécimal brut</li>
+                                                                    <li>Base64 (pour transmission)</li>
+                                                                </ul>
+                                                            </li>
+                                                            <li>Validation et nettoyage des clés</li>
+                                                            <li>Extraction depuis fichiers existants</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-2">
                             <div class="col-md-6">
                                 <div class="card mb-4">
                                     <div class="card-header bg-secondary text-white">
-                                        <h4 class="mb-0">Composants testés</h4>
+                                        <h4 class="mb-0">Fonctionnalités vérifiées</h4>
                                     </div>
                                     <div class="card-body">
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item">
                                                 <h5>Conversion PE-to-Shellcode</h5>
-                                                <p>Vérifie la présence et les fonctionnalités des outils de conversion de fichiers PE en shellcode.</p>
+                                                <p>Vérifie la présence et les fonctionnalités des outils de conversion de fichiers PE en shellcode position-indépendant, incluant le reflective loading et l'analyse d'en-têtes PE.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Chiffrement</h5>
-                                                <p>Analyse les méthodes de chiffrement utilisées pour protéger le shellcode.</p>
+                                                <h5>Encodage polymorphique</h5>
+                                                <p>Teste les algorithmes d'encodage variables qui génèrent des signatures différentes à chaque exécution pour éviter la détection par patterns.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Exécution mémoire</h5>
-                                                <p>Vérifie les techniques d'exécution en mémoire sans écriture sur disque.</p>
+                                                <h5>Chiffrement multi-couche</h5>
+                                                <p>Analyse les méthodes de chiffrement AES-256-CBC, AES-128-CBC et XOR utilisées pour protéger le shellcode et prévenir l'analyse statique.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Techniques d'évasion</h5>
-                                                <p>Identifie les techniques utilisées pour éviter la détection par les EDR/AV.</p>
+                                                <h5>Injection mémoire avancée</h5>
+                                                <p>Vérifie les techniques d'exécution directe en mémoire avec modification des protections (RW→RX) et allocation en plusieurs étapes.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Nettoyage des traces</h5>
-                                                <p>Analyse les mécanismes d'effacement des artefacts et traces d'opération.</p>
+                                                <h5>Anti-analyse dynamique</h5>
+                                                <p>Identifie les techniques utilisées pour détecter les environnements d'analyse comme les sandboxes, les VM et les débogueurs.</p>
                                             </li>
                                         </ul>
                                     </div>
@@ -72,33 +176,33 @@
                             <div class="col-md-6">
                                 <div class="card mb-4">
                                     <div class="card-header bg-secondary text-white">
-                                        <h4 class="mb-0">Workflow du framework</h4>
+                                        <h4 class="mb-0">Workflow complet</h4>
                                     </div>
                                     <div class="card-body">
                                         <ol class="list-group list-group-numbered">
                                             <li class="list-group-item">
-                                                <h5>Génération du payload</h5>
-                                                <p>Création d'un binaire légitime pour la démonstration.</p>
+                                                <h5>1. Préparation du binaire PE</h5>
+                                                <p>Sélection ou création d'un exécutable Windows (PE) pour la conversion.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Conversion en shellcode</h5>
-                                                <p>Transformation du binaire en shellcode avec encodage polymorphique.</p>
+                                                <h5>2. Conversion PE-to-Shellcode</h5>
+                                                <p>Conversion du PE en shellcode avec <code>custom_pe2sc.py</code>. Cette étape transforme le code en position-indépendant et applique un encodage polymorphique.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Chiffrement du shellcode</h5>
-                                                <p>Chiffrement du shellcode avec AES-256-CBC.</p>
+                                                <h5>3. Chiffrement du shellcode</h5>
+                                                <p>Utilisation de <code>encrypt_shell.py</code> pour chiffrer le shellcode avec AES-256-CBC ou autre méthode. Les clés sont générées ou fournies par <code>key_formatter_.py</code>.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Compilation du loader</h5>
-                                                <p>Création d'un exécutable qui charge le shellcode chiffré.</p>
+                                                <h5>4. Génération du loader</h5>
+                                                <p>Création d'un loader dans le langage cible (C, C++ ou Python) qui contient les routines de déchiffrement et d'exécution mémoire.</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Déploiement et exécution</h5>
-                                                <p>Exécution du loader qui déchiffre et exécute le shellcode en mémoire.</p>
+                                                <h5>5. Obfuscation du loader</h5>
+                                                <p>Application de techniques d'obfuscation pour rendre le loader plus difficile à analyser (junk code, string encryption, API hashing).</p>
                                             </li>
                                             <li class="list-group-item">
-                                                <h5>Nettoyage OPSEC</h5>
-                                                <p>Effacement des traces et artefacts de l'opération.</p>
+                                                <h5>6. Exécution sécurisée</h5>
+                                                <p>Le loader déchiffre le shellcode, l'injecte en mémoire, et exécute le PE original sans jamais l'écrire sur le disque.</p>
                                             </li>
                                         </ol>
                                     </div>

