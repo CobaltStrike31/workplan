@@ -65,6 +65,16 @@
                                                             <li>Génère automatiquement des stubs d'assembleur fonctionnels</li>
                                                             <li>Intègre un chargeur réflectif complet</li>
                                                         </ul>
+                                                        <div class="alert alert-success mt-2">
+                                                            <h5>Améliorations récentes :</h5>
+                                                            <ul>
+                                                                <li>Gestion d'erreurs spécifique avec messages détaillés</li>
+                                                                <li>Complétion des stubs assembleur incomplets</li>
+                                                                <li>Utilisation effective des variantes sélectionnées</li>
+                                                                <li>Vérifications systématiques du shellcode généré</li>
+                                                                <li>Écriture atomique des fichiers de sortie via fichiers temporaires</li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -88,6 +98,16 @@
                                                             <li>Exportation en différents formats (binaire, C/C++, Python)</li>
                                                             <li>Compatible avec les techniques anti-sandboxing</li>
                                                         </ul>
+                                                        <div class="alert alert-success mt-2">
+                                                            <h5>Améliorations récentes :</h5>
+                                                            <ul>
+                                                                <li>Ajout d'un mécanisme HMAC-SHA256 pour vérifier l'intégrité</li>
+                                                                <li>Introduction du format v2 avec support HMAC</li>
+                                                                <li>Séparation du matériel de clé (chiffrement et HMAC)</li>
+                                                                <li>Messages d'erreur plus explicites et spécifiques</li>
+                                                                <li>Écriture atomique avec vérification</li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -107,6 +127,16 @@
                                                             <li>Exécute les processus sans traces identifiables</li>
                                                             <li>Sert de pont entre différents outils du framework</li>
                                                         </ul>
+                                                        <div class="alert alert-success mt-2">
+                                                            <h5>Améliorations récentes :</h5>
+                                                            <ul>
+                                                                <li>Suppression de la fonction inutilisée m(b) et des imports superflus</li>
+                                                                <li>Gestion d'erreurs plus spécifique avec messages détaillés</li>
+                                                                <li>Validation complète des fichiers d'entrée/sortie</li>
+                                                                <li>Ajout de la fonction modify_shellcode() pour la variabilité</li>
+                                                                <li>Meilleure intégration avec custom_pe2sc.py</li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -131,6 +161,16 @@
                                                             <li>Validation et nettoyage des clés</li>
                                                             <li>Extraction depuis fichiers existants</li>
                                                         </ul>
+                                                        <div class="alert alert-success mt-2">
+                                                            <h5>Améliorations récentes :</h5>
+                                                            <ul>
+                                                                <li>Validation des tailles de clés avec tailles minimales</li>
+                                                                <li>Sauvegarde sécurisée avec permissions restreintes</li>
+                                                                <li>Écriture atomique avec vérification d'intégrité</li>
+                                                                <li>Calcul et affichage de l'empreinte de la clé</li>
+                                                                <li>Évaluation de la force de la clé selon sa taille</li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -249,6 +289,57 @@
                                             <li>Importance de la sécurité multicouche</li>
                                             <li>Valeur des solutions de détection comportementale</li>
                                             <li>Ne jamais exécuter des fichiers de sources non vérifiées</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4 mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h4 class="mb-0">Améliorations majeures récentes</h4>
+                            </div>
+                            <div class="card-body">
+                                <p>Le framework a bénéficié de nombreuses améliorations visant à renforcer sa robustesse, sa sécurité et sa maintenabilité :</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Robustesse globale</h5>
+                                        <ul>
+                                            <li>Gestion d'erreurs spécifique avec messages détaillés</li>
+                                            <li>Vérifications systématiques des données générées</li>
+                                            <li>Validation des entrées/sorties dans tous les modules</li>
+                                            <li>Écriture atomique des fichiers avec vérification d'intégrité</li>
+                                            <li>Documentation complète pour toutes les méthodes</li>
+                                        </ul>
+                                        
+                                        <h5>Sécurité renforcée</h5>
+                                        <ul>
+                                            <li>Mécanisme HMAC-SHA256 pour vérifier l'authenticité</li>
+                                            <li>Format v2 avec support HMAC</li>
+                                            <li>Séparation du matériel cryptographique</li>
+                                            <li>Sauvegarde sécurisée avec permissions restreintes</li>
+                                            <li>Validation des tailles de clés avec contrôles minimaux</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h5>Optimisation technique</h5>
+                                        <ul>
+                                            <li>Complétion des stubs assembleur incomplets</li>
+                                            <li>Suppression du code inutilisé et des imports superflus</li>
+                                            <li>Fonction modify_shellcode() pour la variabilité</li>
+                                            <li>Utilisation effective des variantes sélectionnées</li>
+                                            <li>Calcul et affichage des empreintes pour validation</li>
+                                        </ul>
+                                        
+                                        <h5>Interface utilisateur</h5>
+                                        <ul>
+                                            <li>Intégration directe des clés générées dans les loaders</li>
+                                            <li>Mode test pour valider la génération et le formatage</li>
+                                            <li>Messages d'erreur plus explicites et spécifiques</li>
+                                            <li>Évaluation de la force des clés selon leur taille</li>
+                                            <li>Meilleure intégration entre les composants</li>
                                         </ul>
                                     </div>
                                 </div>
