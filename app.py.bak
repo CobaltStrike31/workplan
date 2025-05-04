@@ -1093,11 +1093,12 @@ import sys
 import ctypes
 from ctypes import *
 
+# Shellcode and key definition
 """
     
     # Insert the formatted key if provided
     if formatted_key:
-        loader += "# Shellcode and key definition\n" + formatted_key + "\n"
+        loader += formatted_key + "\n"
     else:
         loader += """# Include your shellcode here
 # from shellcode import shellcode, key
