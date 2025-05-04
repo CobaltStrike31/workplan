@@ -10,6 +10,20 @@
 </head>
 <body>
     <div class="container-fluid">
+        <!-- Messages flash -->
+        <div class="container mt-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url_for('index') }}">
@@ -151,6 +165,9 @@
                             <a href="{{ url_for('convert_pe') }}" class="btn btn-success btn-lg">
                                 <i class="bi bi-arrow-repeat"></i> Convertir PE en shellcode
                             </a>
+                            <a href="#" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#oneClickModal">
+                                <i class="bi bi-rocket-takeoff"></i> Système clé en main
+                            </a>
                             <a href="{{ url_for('documentation') }}" class="btn btn-secondary btn-lg">
                                 <i class="bi bi-book-fill"></i> Documentation
                             </a>
@@ -243,8 +260,110 @@
         </div>
     </footer>
     
+    <!-- Modal Système Clé en Main -->
+    <div class="modal fade" id="oneClickModal" tabindex="-1" aria-labelledby="oneClickModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="oneClickModalLabel">
+                        <i class="bi bi-rocket-takeoff"></i> Système Clé en Main
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill"></i> Ce système automatise l'ensemble du workflow pour générer un loader opérationnel en quelques clics.
+                    </div>
+                    
+                    <form id="oneClickForm" action="{{ url_for('process_all_in_one') }}" method="post" enctype="multipart/form-data">
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h5><span class="badge bg-secondary">1</span> Sélectionner le fichier PE à transformer</h5>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" id="pe_file" name="pe_file" required>
+                                </div>
+                                <small class="text-muted">Fichier EXE Windows à convertir (max 10 Mo)</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5><span class="badge bg-secondary">2</span> Méthode de chiffrement</h5>
+                                <select class="form-select" name="encryption_method" id="encryption_method" required>
+                                    <option value="aes-256-cbc" selected>AES-256-CBC (Recommandé)</option>
+                                    <option value="aes-128-cbc">AES-128-CBC (Plus rapide)</option>
+                                    <option value="xor">XOR (Simple)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><span class="badge bg-secondary">3</span> Mot de passe</h5>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="password" name="password" placeholder="Mot de passe pour le chiffrement" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="generate-password">Générer</button>
+                                </div>
+                                <small class="text-muted">Utilisé pour dériver la clé de chiffrement</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5><span class="badge bg-secondary">4</span> Type de loader</h5>
+                                <select class="form-select" name="loader_type" id="loader_type" required>
+                                    <option value="cpp" selected>C++ (Recommandé)</option>
+                                    <option value="c">C</option>
+                                    <option value="python">Python</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><span class="badge bg-secondary">5</span> Options avancées</h5>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="apply_obfuscation" name="apply_obfuscation" checked>
+                                    <label class="form-check-label" for="apply_obfuscation">Appliquer l'obfuscation</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="format_key" name="format_key" checked>
+                                    <label class="form-check-label" for="format_key">Formater la clé pour le loader</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="verify_integrity" name="verify_integrity" checked>
+                                    <label class="form-check-label" for="verify_integrity">Vérification d'intégrité HMAC</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill"></i> 
+                            <strong>Rappel:</strong> Cet outil est à but éducatif uniquement et ne doit pas être utilisé à des fins malveillantes. 
+                            Toutes les opérations sont effectuées localement sur votre poste.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" form="oneClickForm" class="btn btn-danger">
+                        <i class="bi bi-lightning-charge-fill"></i> Générer le système complet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Générateur de mot de passe sécurisé
+        document.getElementById('generate-password').addEventListener('click', function() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+';
+            let password = '';
+            for (let i = 0; i < 16; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('password').value = password;
+        });
+    });
+    </script>
 </body>
 </html>
