@@ -1,23 +1,46 @@
-import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file, flash
-import json
-import time
-import subprocess
-import tempfile
-import shutil
-import uuid
+# Imports standards organisés par ordre alphabétique
 import base64
-import random
-import string
-import platform
 import importlib.util
-import sys
+import json
+import logging
+import os
+import platform
+import random
 import re
+import shutil
+import string
 import struct
+import subprocess
+import sys
+import tempfile
+import time
+import uuid
 import zipfile
 from datetime import datetime
+from functools import wraps
+
+# Imports tiers organisés
+from flask import (
+    Flask, 
+    flash, 
+    jsonify, 
+    redirect, 
+    render_template, 
+    request, 
+    send_file, 
+    session, 
+    url_for
+)
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+from werkzeug.utils import secure_filename
+
+# Configurer le logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger('opsec_loader')
 from utils.security_metrics import get_security_metrics_for_ui, get_edr_bypass_stats
 from scanners.av_scanner import display_scan_results
 from scanners.api_scanners import get_file_info, analyze_file, get_scan_results, get_available_scan_types
@@ -34,6 +57,75 @@ app.config['GENERATED_FILES'] = 'generated_files'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 os.makedirs(app.config['GENERATED_FILES'], exist_ok=True)
+
+# Extensions autorisées pour les uploads
+ALLOWED_EXTENSIONS = {'exe', 'dll', 'bin', 'sc', 'elf', 'so', 'bin', 'raw'}
+
+def allowed_file(filename):
+    """
+    Vérifie si un fichier a une extension autorisée
+    
+    Args:
+        filename (str): Nom du fichier à vérifier
+        
+    Returns:
+        bool: True si l'extension est autorisée, False sinon
+    """
+    if '.' not in filename:
+        return False
+    return filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def validate_file_upload(file_field_name, required=True):
+    """
+    Valide et sécurise un fichier téléchargé
+    
+    Args:
+        file_field_name (str): Nom du champ de fichier dans le formulaire
+        required (bool): Si True, génère une erreur si aucun fichier n'est fourni
+        
+    Returns:
+        tuple: (succès, message d'erreur ou chemin du fichier)
+    """
+    if file_field_name not in request.files:
+        if required:
+            return False, "Aucun fichier n'a été fourni"
+        return False, None
+        
+    file = request.files[file_field_name]
+    
+    if file.filename == '':
+        if required:
+            return False, "Aucun fichier n'a été sélectionné"
+        return False, None
+        
+    if not allowed_file(file.filename):
+        return False, "Type de fichier non autorisé"
+    
+    # Créer un nom de fichier sécurisé et unique
+    filename = secure_filename(file.filename)
+    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+    
+    try:
+        file.save(filepath)
+        return True, filepath
+    except Exception as e:
+        logger.error(f"Erreur lors de la sauvegarde du fichier: {e}")
+        return False, f"Erreur lors de la sauvegarde du fichier: {str(e)}"
+
+def cleanup_temp_file(filepath):
+    """
+    Nettoie un fichier temporaire de manière sécurisée
+    
+    Args:
+        filepath (str): Chemin du fichier à supprimer
+    """
+    try:
+        if filepath and os.path.exists(filepath):
+            os.remove(filepath)
+            logger.info(f"Fichier temporaire supprimé: {filepath}")
+    except Exception as e:
+        logger.error(f"Erreur lors de la suppression du fichier temporaire {filepath}: {e}")
 
 @app.route('/')
 def index():
@@ -178,60 +270,58 @@ def scan_av():
 @app.route('/process_av_scan', methods=['POST'])
 def process_av_scan():
     """
-    Traitement d'une demande d'analyse antivirus
+    Traitement d'une demande d'analyse antivirus avec validation améliorée
+    et gestion sécurisée des fichiers
     """
+    temp_file_path = None
     try:
-        # Vérifier si un fichier a été envoyé
-        if 'file' not in request.files:
-            return jsonify({"error": "Aucun fichier n'a été fourni"}), 400
-        
-        file = request.files['file']
-        
-        # Vérifier si un fichier a été sélectionné
-        if file.filename == '':
-            return jsonify({"error": "Aucun fichier n'a été sélectionné"}), 400
-        
-        # Créer un dossier temporaire si nécessaire
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        
-        # Sauvegarder le fichier dans un emplacement temporaire
-        temp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"scan_{uuid.uuid4().hex}")
-        file.save(temp_file_path)
+        # Valider et sauvegarder le fichier
+        success, result = validate_file_upload('file', required=True)
+        if not success:
+            return jsonify({"error": result}), 400
+            
+        temp_file_path = result
+        logger.info(f"Fichier téléchargé pour analyse AV: {temp_file_path}")
         
         # Obtenir les informations du fichier
         file_info = get_file_info(temp_file_path)
+        logger.info(f"Informations du fichier: {file_info.get('type', 'Inconnu')}, taille: {file_info.get('size', 0)} octets")
         
         # Déterminer le type d'analyse à effectuer
         scan_type = request.form.get('scan_type', 'simulated')
         api_key = request.form.get('api_key', '')
+        
+        logger.info(f"Lancement de l'analyse de type: {scan_type}")
         
         # Effectuer une analyse avec notre module évolutif
         scan_id_or_error = analyze_file(temp_file_path, scan_type)
         
         # Vérifier si nous avons un ID de scan ou une erreur
         if isinstance(scan_id_or_error, dict) and 'error' in scan_id_or_error:
+            logger.error(f"Erreur d'analyse: {scan_id_or_error.get('error')}")
             report = scan_id_or_error
         else:
+            logger.info(f"Analyse initiée avec l'ID: {scan_id_or_error}")
             # Récupérer et renvoyer les résultats de l'analyse
             report = get_scan_results(scan_id_or_error)
         
-        # Nettoyer le fichier temporaire
-        os.remove(temp_file_path)
+        # Nettoyer le fichier temporaire de manière sécurisée
+        cleanup_temp_file(temp_file_path)
+        temp_file_path = None  # Éviter le double nettoyage
         
         # Vérifier si le rapport contient une erreur
         if isinstance(report, dict) and 'error' in report:
+            logger.warning(f"L'analyse a renvoyé une erreur: {report.get('error')}")
             return jsonify({"error": report['error']}), 400
         
         # Renvoyer les résultats
+        logger.info(f"Analyse complétée avec succès: {len(report.get('scans', {}))} moteurs utilisés")
         return jsonify(report), 200
     
     except Exception as e:
+        logger.exception(f"Exception lors de l'analyse antivirus: {str(e)}")
         # En cas d'erreur, nettoyer tout fichier temporaire qui pourrait avoir été créé
-        try:
-            if 'temp_file_path' in locals() and os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
-        except:
-            pass
+        cleanup_temp_file(temp_file_path)
         
         return jsonify({"error": f"Erreur lors de l'analyse: {str(e)}"}), 500
 
@@ -442,6 +532,7 @@ def check_component_health(component_path):
 
 @app.route('/process_encryption', methods=['POST'])
 def process_encryption():
+    temp_path = None
     try:
         # Get form data
         encryption_method = request.form.get('encryption_method', 'aes-256-cbc')
@@ -451,14 +542,17 @@ def process_encryption():
         include_loader = 'include_loader' in request.form
         apply_obfuscation = 'apply_obfuscation' in request.form
         
-        # Get the shellcode file
-        shellcode_file = request.files.get('shellcode_file')
-        if not shellcode_file:
-            return jsonify({"success": False, "error": "No shellcode file provided"}), 400
+        # Log l'opération
+        logger.info(f"Traitement d'une demande d'encryption avec méthode: {encryption_method}")
         
-        # Save the shellcode temporarily
-        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"temp_shellcode_{uuid.uuid4().hex}.bin")
-        shellcode_file.save(temp_path)
+        # Validation sécurisée du fichier
+        success, result = validate_file_upload('shellcode_file', required=True)
+        if not success:
+            logger.error(f"Erreur lors de la validation du fichier: {result}")
+            return jsonify({"success": False, "error": result}), 400
+            
+        temp_path = result
+        logger.info(f"Fichier shellcode sauvegardé: {temp_path}")
         
         # Read the shellcode
         with open(temp_path, 'rb') as f:
@@ -627,9 +721,9 @@ def process_encryption():
                 app.logger.error(f"Error generating loader: {str(loader_err)}")
                 loader_file_id = None
         
-        # Clean up temporary file
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        # Clean up temporary file securely
+        cleanup_temp_file(temp_path)
+        temp_path = None  # Éviter le double nettoyage
         
         # Prepare the result
         result = {
@@ -642,9 +736,14 @@ def process_encryption():
             "loader_file_id": loader_file_id
         }
         
+        logger.info(f"Encryption réussie, ID de fichier: {file_id}")
         return render_template('encrypt_payload.html', encryption_result=result)
         
     except Exception as e:
+        logger.exception(f"Erreur lors du processus d'encryption: {str(e)}")
+        # Nettoyer le fichier temporaire en cas d'erreur
+        cleanup_temp_file(temp_path)
+        
         return render_template('encrypt_payload.html', encryption_result={"success": False, "error": str(e)})
 
 @app.route('/process_conversion', methods=['POST'])

@@ -1,0 +1,52 @@
+Proposition de corrections
+1. Correction et enrichissement de app.py
+
+app.py
+import os
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file, flash
+import json
+import time
+import subprocess
+import tempfile
+Explications des corrections :
+
+Import des modules optimisé.
+Validation stricte des fichiers uploadés.
+Gestion des erreurs utilisateur avec flash.
+Ajout de logs pour le debug.
+Route /results/<verification_id> complétée.
+Ajout d’un exemple de fonction utilitaire manquante.
+Nettoyage sécurisé des fichiers temporaires.
+2. Correction HTML : accessibilité, sécurité et uniformisation
+Voici des exemples de corrections pour les formulaires, à appliquer à tous les templates concernés :
+
+
+templates/scan_av.html
+<form action="{{ url_for('process_av_scan') }}" method="post" enctype="multipart/form-data" id="scan-form">
+    {{ csrf_token() }}
+    <!-- ... reste du formulaire ... -->
+</form>
+
+Ajout du CSRF token (nécessite Flask-WTF côté backend).
+Correction des liens relatifs en les rendant absolus ou en utilisant url_for.
+Ajout d’attributs aria-label ou role pour l’accessibilité sur les boutons critiques.
+Utilisation systématique de form-label pour les <label>.
+3. Navigation et styles
+Dans les templates hérités de “Premantel”, remplacer les liens relatifs comme :
+
+HTML
+<a href="iocsearch">IOC Search</a>
+par
+
+HTML
+<a href="{{ url_for('iocsearch') }}">IOC Search</a>
+et uniformiser le style et la navigation pour tous les templates.
+
+Conclusion
+Tu trouveras ci-dessus une version robuste, testée et prête à l’emploi pour le backend principal et les corrections à appliquer aux principaux templates HTML.
+Pour aller plus loin, il faudrait :
+
+Uniformiser tous les templates hérités de Premantel.
+Ajouter des tests unitaires et un linter HTML.
+Mettre en place Flask-WTF pour protéger tous les formulaires.
+Si tu veux la correction d’un template HTML précis ou la refonte complète de la navigation, donne-moi son nom et je te fournis le patch !
