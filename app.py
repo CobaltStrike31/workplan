@@ -2115,6 +2115,7 @@ def test_cleanup(framework_path):
     }
 
 @app.route('/process_all_in_one', methods=['POST'])
+@csrf_protected
 def process_all_in_one():
     """
     Traitement du système clé en main

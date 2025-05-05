@@ -85,6 +85,9 @@
                         </div>
                         
                         <form action="{{ url_for('verify') }}" method="post" enctype="multipart/form-data" id="verify-form">
+                            <!-- Protection CSRF -->
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+                            
                             <div class="mb-3">
                                 <label for="framework_path" class="form-label">Chemin vers le Framework OPSEC Loader</label>
                                 <input type="text" class="form-control" id="framework_path" name="framework_path" value="framework/src" required>
@@ -289,6 +292,9 @@
                     </div>
                     
                     <form id="oneClickForm" action="{{ url_for('process_all_in_one') }}" method="post" enctype="multipart/form-data">
+                        <!-- Protection CSRF -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+                        
                         <div class="row mb-4">
                             <div class="col-md-12">
                                 <h5><span class="badge bg-secondary">1</span> Sélectionner le fichier PE à transformer</h5>
