@@ -88,40 +88,11 @@ function setupDynamicSecurityMeters() {
         
         // Mettre à jour le compteur si disponible
         if (securityScoreMeter) {
-            // Vérifier si c'est le nouveau style (avec myProgress comme parent)
-            const hasNewStyle = securityScoreMeter.parentElement && securityScoreMeter.parentElement.id === 'myProgress';
+            // Pour la version simplifiée, juste mettre à jour le texte
+            securityScoreMeter.textContent = securityScore + '%';
             
-            if (hasNewStyle) {
-                // Nouveau style avec les classes progress-bar-XX
-                securityScoreMeter.style.width = "0%";  // Réinitialiser pour l'animation
-                securityScoreMeter.className = `progress-bar progress-bar-${Math.floor(securityScore / 5) * 5}`;
-                
-                // Animation progressive
-                let width = 0;
-                const duration = 800; // ms
-                const fps = 60;
-                const frames = duration / (1000 / fps);
-                const increment = securityScore / frames;
-                
-                const animation = setInterval(function() {
-                    if (width >= securityScore) {
-                        clearInterval(animation);
-                    } else {
-                        width += increment;
-                        if (width > securityScore) width = securityScore;
-                        
-                        securityScoreMeter.style.width = width + '%';
-                        securityScoreMeter.textContent = Math.round(width) + '%';
-                    }
-                }, 1000 / fps);
-                
-                // Mettre à jour le niveau de sécurité
-                updateSecurityStatusNewStyle(securityScore);
-            } else {
-                // Ancien style avec bootstrap
-                animateSecurityMeter(securityScoreMeter, securityScore, 0, 100, false);
-                updateSecurityLabel(securityScoreMeter.nextElementSibling, securityScore);
-            }
+            // Mettre à jour le statut de sécurité
+            updateSecurityStatusSimplified(securityScore);
         }
     };
     
@@ -371,6 +342,36 @@ function updateSecurityStatusNewStyle(score) {
         statusElement.classList.add('level-elevated');
         label = 'Configuration très sécurisée';
         icon = '<i class="bi bi-shield-check"></i>';
+    }
+    
+    statusElement.innerHTML = `${icon} <span>${label}</span>`;
+}
+
+/**
+ * Met à jour le statut de sécurité pour la version simplifiée
+ * 
+ * @param {number} score - Score de sécurité actuel
+ */
+function updateSecurityStatusSimplified(score) {
+    const statusElement = document.getElementById('security-status');
+    if (!statusElement) return;
+    
+    // Définir le niveau en fonction du score
+    let label = '';
+    let icon = '';
+    
+    if (score < 25) {
+        label = 'Configuration risquée';
+        icon = '<i class="bi bi-exclamation-triangle text-danger"></i>';
+    } else if (score < 50) {
+        label = 'Configuration basique';
+        icon = '<i class="bi bi-shield-fill text-warning"></i>';
+    } else if (score < 75) {
+        label = 'Configuration sécurisée';
+        icon = '<i class="bi bi-shield text-info"></i>';
+    } else {
+        label = 'Configuration très sécurisée';
+        icon = '<i class="bi bi-shield-check text-success"></i>';
     }
     
     statusElement.innerHTML = `${icon} <span>${label}</span>`;
