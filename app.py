@@ -585,112 +585,37 @@ def process_encryption():
         success, result = validate_file_upload('shellcode_file', required=True)
         if not success:
             logger.error(f"Erreur lors de la validation du fichier: {result}")
-            return jsonify({"success": False, "error": result}), 400
+            return render_template('encrypt_payload.html', 
+                                encryption_result={"success": False, "error": result})
             
         temp_path = result
         logger.info(f"Fichier shellcode sauvegardé: {temp_path}")
         
-        # Read the shellcode
-        with open(temp_path, 'rb') as f:
-            shellcode = f.read()
+        # Chemin vers le répertoire du framework
+        framework_path = os.path.join(os.getcwd(), "Mode Opsec")
         
-        # Generate a key if auto generation is selected
-        if key_generation == 'auto' or not encryption_key:
-            if encryption_method == 'aes-256-cbc':
-                key = get_random_bytes(32)  # 32 bytes = 256 bits
-                hex_key = key.hex()
-            elif encryption_method == 'aes-128-cbc':
-                key = get_random_bytes(16)  # 16 bytes = 128 bits
-                hex_key = key.hex()
-            else:  # XOR
-                key = get_random_bytes(16)
-                hex_key = key.hex()
-        else:
-            # Use the provided key
-            hex_key = encryption_key
-            key = bytes.fromhex(hex_key) if len(encryption_key) % 2 == 0 else encryption_key.encode()
+        # Utiliser le wrapper sécurisé pour le chiffrement
+        # Si la génération de clé est automatique, le wrapper générera une clé sécurisée
+        encrypt_result = safe_encrypt_shellcode(
+            framework_path,
+            temp_path,
+            output_format=output_format,
+            encryption_method=encryption_method,
+            encryption_key=None if key_generation == 'auto' else encryption_key,
+            verify_integrity=True  # Toujours activer la vérification d'intégrité HMAC
+        )
         
-        # Encrypt the shellcode
-        if encryption_method.startswith('aes'):
-            iv = get_random_bytes(16)
-            if encryption_method == 'aes-256-cbc':
-                cipher = AES.new(key, AES.MODE_CBC, iv)
-            else:  # aes-128-cbc
-                cipher = AES.new(key, AES.MODE_CBC, iv)
-            
-            # Pad the data to be a multiple of 16 bytes (AES block size)
-            padded_data = pad(shellcode, AES.block_size)
-            encrypted_data = cipher.encrypt(padded_data)
-            
-            # Prepend the IV to the encrypted data
-            final_data = iv + encrypted_data
-        else:  # XOR
-            # Simple XOR implementation
-            final_data = bytearray(len(shellcode))
-            for i in range(len(shellcode)):
-                final_data[i] = shellcode[i] ^ key[i % len(key)]
+        if not encrypt_result['success']:
+            logger.error(f"Erreur lors du chiffrement: {encrypt_result['error']}")
+            return render_template('encrypt_payload.html', 
+                                encryption_result={"success": False, "error": f"Erreur lors du chiffrement: {encrypt_result['error']}"})
         
-        # Generate file ID for the result
+        # Copier le fichier chiffré vers le répertoire des fichiers générés
         file_id = uuid.uuid4().hex
-        
-        # Create the output based on the format
         output_path = os.path.join(app.config['GENERATED_FILES'], f"{file_id}")
         
-        if output_format == 'bin':
-            # Save as binary
-            with open(output_path, 'wb') as f:
-                f.write(final_data)
-        else:
-            # Format for code output
-            formatted_data = ""
-            if output_format == 'c':
-                formatted_data = "unsigned char encrypted_shellcode[] = {\n"
-                for i in range(0, len(final_data), 16):
-                    chunk = final_data[i:i+16]
-                    formatted_data += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                formatted_data += "};\n\nunsigned int encrypted_shellcode_len = " + str(len(final_data)) + ";\n"
-                
-                if include_loader:
-                    formatted_data += "\n// Encryption key (hex)\n"
-                    formatted_data += f"unsigned char key[] = {{\n"
-                    for i in range(0, len(key), 16):
-                        chunk = key[i:i+16]
-                        formatted_data += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                    formatted_data += "};\n"
-            
-            elif output_format == 'cpp':
-                formatted_data = "#include <cstdint>\n\nstd::uint8_t encrypted_shellcode[] = {\n"
-                for i in range(0, len(final_data), 16):
-                    chunk = final_data[i:i+16]
-                    formatted_data += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                formatted_data += "};\n\nconst std::size_t encrypted_shellcode_len = " + str(len(final_data)) + ";\n"
-                
-                if include_loader:
-                    formatted_data += "\n// Encryption key (hex)\n"
-                    formatted_data += f"std::uint8_t key[] = {{\n"
-                    for i in range(0, len(key), 16):
-                        chunk = key[i:i+16]
-                        formatted_data += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                    formatted_data += "};\n"
-            
-            elif output_format == 'py':
-                formatted_data = "encrypted_shellcode = bytearray([\n"
-                for i in range(0, len(final_data), 16):
-                    chunk = final_data[i:i+16]
-                    formatted_data += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                formatted_data += "])\n"
-                
-                if include_loader:
-                    formatted_data += "\n# Encryption key (hex)\n"
-                    formatted_data += f"key = bytearray([\n"
-                    for i in range(0, len(key), 16):
-                        chunk = key[i:i+16]
-                        formatted_data += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                    formatted_data += "])\n"
-            
-            # Save the formatted output
-            with open(output_path, 'w') as f:
-                f.write(formatted_data)
+        import shutil
+        shutil.copy2(encrypt_result['output_path'], output_path)
         
         # Generate a loader if requested
         loader_file_id = None
@@ -699,75 +624,63 @@ def process_encryption():
             loader_path = os.path.join(app.config['GENERATED_FILES'], loader_file_id)
             
             try:
-                # Generate the appropriate loader code with the actual key
-                app.logger.info(f"Generating loader with key: {hex_key}")
+                # Formater la clé pour le loader avec le wrapper sécurisé
+                formatted_key_result = safe_format_key(
+                    framework_path,
+                    encrypt_result['key'],
+                    format_type=output_format,
+                    add_comments=True,
+                    add_checksum=True
+                )
                 
-                # Format the key for injection into loader
-                key_formatted = ""
-                if output_format == 'c':
-                    key_formatted = "unsigned char key[] = {\n"
-                    for i in range(0, len(key), 16):
-                        chunk = key[i:i+16]
-                        key_formatted += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                    key_formatted += "};\nunsigned int key_len = " + str(len(key)) + ";\n"
-                elif output_format == 'cpp':
-                    key_formatted = "std::uint8_t key[] = {\n"
-                    for i in range(0, len(key), 16):
-                        chunk = key[i:i+16]
-                        key_formatted += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                    key_formatted += "};\nconst std::size_t key_len = " + str(len(key)) + ";\n"
-                elif output_format == 'py':
-                    key_formatted = "key = bytearray([\n"
-                    for i in range(0, len(key), 16):
-                        chunk = key[i:i+16]
-                        key_formatted += "    " + ", ".join(f"0x{b:02x}" for b in chunk) + ",\n"
-                    key_formatted += "])\n"
+                if formatted_key_result['success']:
+                    formatted_key = formatted_key_result['formatted_key']
+                    logger.info(f"Clé formatée avec succès pour le loader")
+                else:
+                    logger.warning(f"Avertissement: impossible de formater la clé: {formatted_key_result['error']}")
+                    formatted_key = None
                 
                 # Generate the loader with the formatted key
                 if output_format == 'c':
-                    loader_code = generate_c_loader(encryption_method, apply_obfuscation, key_formatted)
+                    loader_code = generate_c_loader(encryption_method, apply_obfuscation, formatted_key)
                 elif output_format == 'cpp':
-                    loader_code = generate_cpp_loader(encryption_method, apply_obfuscation, key_formatted)
+                    loader_code = generate_cpp_loader(encryption_method, apply_obfuscation, formatted_key)
                 elif output_format == 'py':
-                    loader_code = generate_python_loader(encryption_method, apply_obfuscation, key_formatted)
+                    loader_code = generate_python_loader(encryption_method, apply_obfuscation, formatted_key)
                 else:
                     # Default to C loader for binary or other formats
-                    loader_code = generate_c_loader(encryption_method, apply_obfuscation, key_formatted)
+                    loader_code = generate_c_loader(encryption_method, apply_obfuscation, formatted_key)
                 
-                # Write the loader to file and ensure it's properly saved
-                try:
-                    app.logger.info(f"Writing loader code to: {loader_path}")
-                    
-                    with open(loader_path, 'w') as f:
-                        f.write(loader_code)
-                    
-                    # Verify the file was created
-                    if not os.path.exists(loader_path):
-                        app.logger.error(f"Loader file creation failed - file does not exist: {loader_path}")
-                        loader_file_id = None
-                    elif os.path.getsize(loader_path) == 0:
-                        app.logger.error(f"Loader file creation failed - file is empty: {loader_path}")
-                        loader_file_id = None
-                    else:
-                        app.logger.info(f"Loader file created successfully: {loader_path} (size: {os.path.getsize(loader_path)} bytes)")
-                except IOError as io_err:
-                    app.logger.error(f"IO error writing loader file: {str(io_err)}")
+                # Write the loader to file
+                with open(loader_path, 'w') as f:
+                    f.write(loader_code)
+                
+                # Verify the file was created
+                if not os.path.exists(loader_path):
+                    logger.error(f"Loader file creation failed - file does not exist: {loader_path}")
                     loader_file_id = None
+                elif os.path.getsize(loader_path) == 0:
+                    logger.error(f"Loader file creation failed - file is empty: {loader_path}")
+                    loader_file_id = None
+                else:
+                    logger.info(f"Loader file created successfully: {loader_path} (size: {os.path.getsize(loader_path)} bytes)")
             except Exception as loader_err:
-                app.logger.error(f"Error generating loader: {str(loader_err)}")
+                logger.error(f"Error generating loader: {str(loader_err)}")
                 loader_file_id = None
         
-        # Clean up temporary file securely
+        # Clean up temporary files
         cleanup_temp_file(temp_path)
-        temp_path = None  # Éviter le double nettoyage
+        
+        # Nettoyer les fichiers temporaires du wrapper sécurisé
+        SafeEncryption(framework_path).cleanup(encrypt_result['output_path'])
         
         # Prepare the result
         result = {
             "success": True,
-            "original_size": len(shellcode),
-            "encrypted_size": len(final_data),
+            "original_size": encrypt_result['original_size'],
+            "encrypted_size": encrypt_result['encrypted_size'],
             "method": encryption_method,
-            "key": hex_key,
+            "key": encrypt_result['key'],
             "file_id": file_id,
             "loader_file_id": loader_file_id
         }
@@ -780,7 +693,8 @@ def process_encryption():
         # Nettoyer le fichier temporaire en cas d'erreur
         cleanup_temp_file(temp_path)
         
-        return render_template('encrypt_payload.html', encryption_result={"success": False, "error": str(e)})
+        return render_template('encrypt_payload.html', 
+                            encryption_result={"success": False, "error": str(e)})
 
 @app.route('/process_conversion', methods=['POST'])
 @csrf_protected
@@ -853,38 +767,46 @@ def process_conversion():
         conversion_success = False
         conversion_output = ""
         
+        # Chemin vers le répertoire du framework
+        framework_path = os.path.join(os.getcwd(), "Mode Opsec")
+        
         if conversion_method == 'custom':
-            # Using custom PE to shellcode converter
+            # Utiliser le wrapper sécurisé pour la conversion PE -> shellcode
             try:
-                # Import the converter module from OPSEC framework
-                import sys
-                sys.path.append("Mode Opsec")
-                try:
-                    from custom_pe2sc import PEConverter
-                    
-                    # Create converter instance
-                    converter = PEConverter(debug=True)
-                    
-                    # Convert the PE file
-                    converter.convert(temp_path, temp_output)
-                    
-                    # Read the generated shellcode
-                    with open(temp_output, 'rb') as f:
+                # Appeler la fonction safe_convert_pe_to_shellcode
+                logger.info(f"Utilisation du wrapper sécurisé pour convertir le fichier PE: {temp_path}")
+                
+                conversion_result = safe_convert_pe_to_shellcode(
+                    framework_path,
+                    temp_path,
+                    output_format='bin',  # Format brut pour le moment
+                    architecture=architecture,
+                    add_obfuscation=obfuscate_output,
+                    bypass_security=bypass_edr
+                )
+                
+                if conversion_result['success']:
+                    # Lecture du shellcode généré
+                    with open(conversion_result['output_path'], 'rb') as f:
                         shellcode = f.read()
-                        
+                    
                     conversion_success = True
-                except Exception as custom_err:
-                    conversion_output = f"Erreur avec convertisseur personnalisé: {str(custom_err)}"
-                    # Fallback to basic conversion for demonstration
+                    conversion_output = f"Conversion réussie avec le wrapper sécurisé. Taille originale: {conversion_result['original_size']} octets, Taille shellcode: {conversion_result['shellcode_size']} octets."
+                    logger.info(conversion_output)
+                else:
+                    conversion_output = f"Erreur avec convertisseur sécurisé: {conversion_result['error']}"
+                    logger.error(conversion_output)
                     raise Exception(conversion_output)
-            except ImportError:
-                conversion_output = "Module custom_pe2sc non trouvé, utilisation du convertisseur de repli."
-                # Fallback to donut-like conversion if custom module not found
+            except Exception as custom_err:
+                conversion_output = f"Erreur avec convertisseur personnalisé: {str(custom_err)}"
+                logger.error(conversion_output)
+                
+                # Fallback à la méthode donut-like si le wrapper sécurisé échoue
                 try:
                     conversion_method = 'donut'
                     # Continue to donut method
                 except:
-                    # If all fails, create a shellcode that demonstrates the structure without real conversion
+                    # En cas d'échec complet, créer un shellcode de démonstration
                     shellcode = bytearray()
                     if architecture == "x64":
                         shellcode.extend(b"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20")
@@ -1007,24 +929,70 @@ def process_conversion():
         # Encrypt the shellcode if requested
         encrypt_file_id = None
         encryption_key = None
+        
         if encrypt_result:
-            encrypt_file_id = uuid.uuid4().hex
-            encryption_key = get_random_bytes(32).hex()  # 32 bytes = 256 bits
-            key = bytes.fromhex(encryption_key)
-            
-            # Encrypt with AES-256-CBC
-            iv = get_random_bytes(16)
-            cipher = AES.new(key, AES.MODE_CBC, iv)
-            padded_data = pad(shellcode, AES.block_size)
-            encrypted_data = cipher.encrypt(padded_data)
-            
-            # Prepend the IV to the encrypted data
-            final_data = iv + encrypted_data
-            
-            # Save the encrypted shellcode
-            encrypt_path = os.path.join(app.config['GENERATED_FILES'], f"{encrypt_file_id}")
-            with open(encrypt_path, 'wb') as f:
-                f.write(final_data)
+            # Utiliser le wrapper sécurisé pour le chiffrement
+            try:
+                # Sauvegarder d'abord le shellcode dans un fichier temporaire
+                temp_shellcode_path = os.path.join(app.config['UPLOAD_FOLDER'], f"temp_shellcode_{uuid.uuid4().hex}.bin")
+                with open(temp_shellcode_path, 'wb') as f:
+                    f.write(shellcode)
+                
+                # Chiffrer avec le wrapper sécurisé
+                encrypt_result = safe_encrypt_shellcode(
+                    framework_path,
+                    temp_shellcode_path,
+                    output_format='bin',  # Toujours en binaire ici
+                    encryption_method='aes-256-cbc',  # Méthode de chiffrement forte par défaut
+                    encryption_key=None,  # Génération automatique d'une clé sécurisée
+                    verify_integrity=True  # Activer la vérification HMAC
+                )
+                
+                if encrypt_result['success']:
+                    encrypt_file_id = uuid.uuid4().hex
+                    encryption_key = encrypt_result['key']
+                    
+                    # Copier le fichier chiffré vers le répertoire des fichiers générés
+                    encrypt_path = os.path.join(app.config['GENERATED_FILES'], f"{encrypt_file_id}")
+                    import shutil
+                    shutil.copy2(encrypt_result['output_path'], encrypt_path)
+                    
+                    # Nettoyer les fichiers temporaires
+                    cleanup_temp_file(temp_shellcode_path)
+                    SafeEncryption(framework_path).cleanup(encrypt_result['output_path'])
+                    
+                    logger.info(f"Shellcode chiffré avec succès: {encrypt_file_id}")
+                else:
+                    logger.error(f"Erreur lors du chiffrement du shellcode: {encrypt_result['error']}")
+                    # Nettoyer les fichiers temporaires
+                    cleanup_temp_file(temp_shellcode_path)
+            except Exception as e:
+                logger.error(f"Exception lors du chiffrement du shellcode: {str(e)}")
+                # En cas d'échec, utiliser la méthode de secours d'origine
+                try:
+                    encrypt_file_id = uuid.uuid4().hex
+                    encryption_key = get_random_bytes(32).hex()
+                    key = bytes.fromhex(encryption_key)
+                    
+                    # Encrypt with AES-256-CBC
+                    iv = get_random_bytes(16)
+                    cipher = AES.new(key, AES.MODE_CBC, iv)
+                    padded_data = pad(shellcode, AES.block_size)
+                    encrypted_data = cipher.encrypt(padded_data)
+                    
+                    # Prepend the IV to the encrypted data
+                    final_data = iv + encrypted_data
+                    
+                    # Save the encrypted shellcode
+                    encrypt_path = os.path.join(app.config['GENERATED_FILES'], f"{encrypt_file_id}")
+                    with open(encrypt_path, 'wb') as f:
+                        f.write(final_data)
+                        
+                    logger.warning("Fallback vers le mode de chiffrement de secours.")
+                except Exception as backup_err:
+                    logger.error(f"Échec complet du chiffrement: {str(backup_err)}")
+                    encrypt_file_id = None
+                    encryption_key = None
         
         # Clean up temporary files de manière sécurisée
         cleanup_temp_file(temp_path)
