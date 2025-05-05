@@ -419,32 +419,23 @@
                         </div>
                         
                         <!-- Indicateur de sécurité dynamique -->
-                        <div class="card mb-4 border-primary">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Score de sécurité de la configuration</h5>
+                        <div class="realtime-score mb-4">
+                            <div class="realtime-score-header">
+                                <i class="bi bi-shield-lock"></i> Score de sécurité de la configuration
                             </div>
-                            <div class="card-body">
-                                <div class="row align-items-center">
-                                    <div class="col-md-8">
-                                        <div class="progress" style="height: 30px;">
-                                            <div id="security-score-meter" class="progress-bar security-meter" 
-                                                data-value="85" data-max-value="100" data-min-value="0" 
-                                                role="progressbar" style="width: 0%;" 
-                                                aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="fw-bold">85%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div id="security-status" class="text-center">
-                                            <i class="bi bi-shield-check text-success fs-2"></i>
-                                            <div class="mt-1 fw-bold">Configuration sécurisée</div>
-                                        </div>
+                            <div class="realtime-score-content">
+                                <div class="realtime-score-bar-container">
+                                    <div id="myProgress">
+                                        <div id="security-score-meter" class="progress-bar progress-bar-85" style="width: 85%">85%</div>
                                     </div>
                                 </div>
-                                <div class="text-muted small mt-2">
-                                    <i class="bi bi-info-circle"></i> Le score s'actualise automatiquement en fonction de vos choix.
+                                <div id="security-status" class="realtime-score-level level-elevated">
+                                    <i class="bi bi-shield-check"></i>
+                                    <span>Configuration sécurisée</span>
                                 </div>
+                            </div>
+                            <div class="realtime-score-footer p-2">
+                                <small class="text-muted"><i class="bi bi-info-circle"></i> Le score s'actualise automatiquement en fonction de vos choix.</small>
                             </div>
                         </div>
                         

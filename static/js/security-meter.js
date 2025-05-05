@@ -88,8 +88,40 @@ function setupDynamicSecurityMeters() {
         
         // Mettre à jour le compteur si disponible
         if (securityScoreMeter) {
-            animateSecurityMeter(securityScoreMeter, securityScore, 0, 100, false);
-            updateSecurityLabel(securityScoreMeter.nextElementSibling, securityScore);
+            // Vérifier si c'est le nouveau style (avec myProgress comme parent)
+            const hasNewStyle = securityScoreMeter.parentElement && securityScoreMeter.parentElement.id === 'myProgress';
+            
+            if (hasNewStyle) {
+                // Nouveau style avec les classes progress-bar-XX
+                securityScoreMeter.style.width = "0%";  // Réinitialiser pour l'animation
+                securityScoreMeter.className = `progress-bar progress-bar-${Math.floor(securityScore / 5) * 5}`;
+                
+                // Animation progressive
+                let width = 0;
+                const duration = 800; // ms
+                const fps = 60;
+                const frames = duration / (1000 / fps);
+                const increment = securityScore / frames;
+                
+                const animation = setInterval(function() {
+                    if (width >= securityScore) {
+                        clearInterval(animation);
+                    } else {
+                        width += increment;
+                        if (width > securityScore) width = securityScore;
+                        
+                        securityScoreMeter.style.width = width + '%';
+                        securityScoreMeter.textContent = Math.round(width) + '%';
+                    }
+                }, 1000 / fps);
+                
+                // Mettre à jour le niveau de sécurité
+                updateSecurityStatusNewStyle(securityScore);
+            } else {
+                // Ancien style avec bootstrap
+                animateSecurityMeter(securityScoreMeter, securityScore, 0, 100, false);
+                updateSecurityLabel(securityScoreMeter.nextElementSibling, securityScore);
+            }
         }
     };
     
@@ -305,4 +337,41 @@ function updateSecurityLabel(labelElement, score) {
     }
     
     labelElement.innerHTML = `${icon} <span>${label}</span>`;
+}
+
+/**
+ * Met à jour le statut de sécurité pour le nouveau style de barres de progression
+ * 
+ * @param {number} score - Score de sécurité actuel
+ */
+function updateSecurityStatusNewStyle(score) {
+    const statusElement = document.getElementById('security-status');
+    if (!statusElement) return;
+    
+    // Réinitialiser les classes
+    statusElement.className = 'realtime-score-level';
+    
+    // Définir le niveau en fonction du score
+    let label = '';
+    let icon = '';
+    
+    if (score < 25) {
+        statusElement.classList.add('level-minimal');
+        label = 'Configuration risquée';
+        icon = '<i class="bi bi-exclamation-triangle"></i>';
+    } else if (score < 50) {
+        statusElement.classList.add('level-reduced');
+        label = 'Configuration basique';
+        icon = '<i class="bi bi-shield-fill"></i>';
+    } else if (score < 75) {
+        statusElement.classList.add('level-moderate');
+        label = 'Configuration sécurisée';
+        icon = '<i class="bi bi-shield"></i>';
+    } else {
+        statusElement.classList.add('level-elevated');
+        label = 'Configuration très sécurisée';
+        icon = '<i class="bi bi-shield-check"></i>';
+    }
+    
+    statusElement.innerHTML = `${icon} <span>${label}</span>`;
 }
