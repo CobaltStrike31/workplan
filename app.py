@@ -46,6 +46,12 @@ from scanners.av_scanner import display_scan_results
 from scanners.api_scanners import get_file_info, analyze_file, get_scan_results, get_available_scan_types
 from Crypto.Random import get_random_bytes
 
+# Import des wrappers sécurisés pour les modules du framework
+from utils.safe_wrappers.safe_pe2sc import SafePE2SC, safe_convert_pe_to_shellcode
+from utils.safe_wrappers.safe_encryption import SafeEncryption, safe_encrypt_shellcode, safe_decrypt_shellcode
+from utils.safe_wrappers.safe_key_formatter import SafeKeyFormatter, safe_format_key, safe_generate_key
+from utils.safe_wrappers.safe_havoc import SafeHavoc, safe_convert_havoc_to_shellcode
+
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "opsec_loader_verification_key")
 app.config['UPLOAD_FOLDER'] = 'temp_uploads'
