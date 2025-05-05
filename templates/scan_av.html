@@ -16,13 +16,20 @@
                         <p class="mb-0">Utilisez cette fonctionnalité à des fins éducatives pour comprendre les limites des technologies de détection.</p>
                     </div>
                     
-                    <form action="{{ url_for('process_av_scan') }}" method="post" enctype="multipart/form-data" id="scan-form">
+                    <form action="{{ url_for('process_av_scan') }}" method="post" enctype="multipart/form-data" id="scan-form" onsubmit="return validateScanForm()">
+                        <!-- Protection CSRF -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+                        
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="mb-3">
                                     <label for="file" class="form-label">Fichier à analyser</label>
-                                    <input type="file" class="form-control" id="file" name="file" required>
-                                    <div class="form-text">Taille maximale: 10MB</div>
+                                    <input type="file" class="form-control" id="file" name="file" required 
+                                           accept=".exe,.dll,.bin,.sc,.elf,.so,.raw"
+                                           aria-describedby="fileHelp">
+                                    <div id="fileHelp" class="form-text">
+                                        Taille maximale: 10MB. Extensions autorisées: .exe, .dll, .bin, .sc, .elf, .so, .raw
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -242,6 +249,46 @@
 
 {% block extra_js %}
 <script>
+// Fonction de validation du formulaire
+function validateScanForm() {
+    const fileInput = document.getElementById('file');
+    const scanButton = document.getElementById('scan-button');
+    
+    // Vérifier si un fichier est sélectionné
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Veuillez sélectionner un fichier à analyser.");
+        return false;
+    }
+    
+    const file = fileInput.files[0];
+    
+    // Vérifier la taille du fichier (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB en octets
+    if (file.size > maxSize) {
+        alert("Le fichier est trop volumineux. Taille maximale: 10MB.");
+        return false;
+    }
+    
+    // Vérifier l'extension du fichier
+    const allowedExtensions = ['.exe', '.dll', '.bin', '.sc', '.elf', '.so', '.raw'];
+    const fileName = file.name.toLowerCase();
+    const fileExtension = '.' + fileName.split('.').pop();
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+        alert("Type de fichier non autorisé. Extensions autorisées: " + allowedExtensions.join(', '));
+        return false;
+    }
+    
+    // Afficher un message de sécurité à l'utilisateur
+    if (!confirm("AVERTISSEMENT: Ce fichier sera analysé uniquement à des fins éducatives. " + 
+                "N'utilisez pas cette fonctionnalité avec des données sensibles ou confidentielles. " +
+                "Êtes-vous sûr de vouloir continuer?")) {
+        return false;
+    }
+    
+    return true;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Gestion de l'affichage du champ API Key
     const scanTypeSelect = document.getElementById('scan_type');

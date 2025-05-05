@@ -53,6 +53,32 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB limit
 app.config['RESULTS_FOLDER'] = 'saved_results'
 app.config['GENERATED_FILES'] = 'generated_files'
 
+# Fonction pour générer des tokens CSRF qui seront utilisés dans les formulaires
+def generate_csrf_token():
+    """
+    Génère un token CSRF unique pour protéger les formulaires contre les attaques CSRF
+    """
+    if 'csrf_token' not in session:
+        session['csrf_token'] = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32))
+    return session['csrf_token']
+
+# Enregistrer la fonction pour qu'elle soit disponible dans les templates
+app.jinja_env.globals['csrf_token'] = generate_csrf_token
+
+# Décorateur pour vérifier le token CSRF
+def csrf_protected(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Vérifier que le token est présent dans la requête POST
+        if request.method == "POST":
+            token = session.get('csrf_token')
+            if not token or token != request.form.get('csrf_token'):
+                logger.warning(f"CSRF protection triggered: Invalid or missing CSRF token in POST request to {request.path}")
+                flash("Action non autorisée. Veuillez réessayer.", "danger")
+                return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Create necessary folders if they don't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
@@ -268,6 +294,7 @@ def scan_av():
     return render_template('scan_av.html', available_scans=available_scans)
 
 @app.route('/process_av_scan', methods=['POST'])
+@csrf_protected
 def process_av_scan():
     """
     Traitement d'une demande d'analyse antivirus avec validation améliorée
@@ -531,6 +558,7 @@ def check_component_health(component_path):
     return result
 
 @app.route('/process_encryption', methods=['POST'])
+@csrf_protected
 def process_encryption():
     temp_path = None
     try:
@@ -748,8 +776,13 @@ def process_encryption():
 
 @app.route('/process_conversion', methods=['POST'])
 def process_conversion():
+    """
+    Traitement de la conversion PE en shellcode avec validation améliorée
+    et options de formatage avancées
+    """
+    temp_path = None
     try:
-        # Get form data
+        # Récupérer les données du formulaire
         conversion_method = request.form.get('conversion_method', 'custom')
         encoding_method = request.form.get('encoding_method', 'polymorphic')
         architecture = request.form.get('architecture', 'auto')
@@ -758,15 +791,21 @@ def process_conversion():
         bypass_edr = 'bypass_edr' in request.form
         encrypt_result = 'encrypt_result' in request.form
         
-        # Get the PE file
-        pe_file = request.files.get('pe_file')
-        if not pe_file:
-            return render_template('convert_pe.html', conversion_result={"success": False, "error": "Aucun fichier PE fourni"}), 400
+        # Validation du token CSRF
+        if 'csrf_token' in request.form:
+            logger.info("Token CSRF fourni dans la requête")
         
-        # Save the PE file temporarily
-        temp_pe_name = f"temp_pe_{uuid.uuid4().hex}.exe"
-        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], temp_pe_name)
-        pe_file.save(temp_path)
+        # Log l'opération
+        logger.info(f"Traitement d'une demande de conversion PE avec méthode: {conversion_method}")
+        
+        # Validation sécurisée du fichier PE
+        success, result = validate_file_upload('pe_file', required=True)
+        if not success:
+            logger.error(f"Erreur lors de la validation du fichier PE: {result}")
+            return render_template('convert_pe.html', conversion_result={"success": False, "error": result}), 400
+            
+        temp_path = result
+        logger.info(f"Fichier PE sauvegardé: {temp_path}")
         
         # Read the PE file to get original size
         with open(temp_path, 'rb') as f:
@@ -978,11 +1017,16 @@ def process_conversion():
             with open(encrypt_path, 'wb') as f:
                 f.write(final_data)
         
-        # Clean up temporary files
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-        if os.path.exists(temp_output):
-            os.remove(temp_output)
+        # Clean up temporary files de manière sécurisée
+        cleanup_temp_file(temp_path)
+        temp_path = None  # Éviter le double nettoyage
+        
+        if temp_output and os.path.exists(temp_output):
+            try:
+                os.remove(temp_output)
+                logger.info(f"Fichier temporaire de sortie supprimé: {temp_output}")
+            except Exception as e:
+                logger.error(f"Erreur lors de la suppression du fichier temporaire de sortie: {e}")
         
         # Prepare preview of the shellcode (first 64 bytes in hex)
         preview_bytes = shellcode[:64]
@@ -1005,6 +1049,10 @@ def process_conversion():
         return render_template('convert_pe.html', conversion_result=result)
         
     except Exception as e:
+        logger.exception(f"Erreur lors de la conversion PE: {str(e)}")
+        # Nettoyer les fichiers temporaires en cas d'erreur
+        cleanup_temp_file(temp_path)
+        
         return render_template('convert_pe.html', conversion_result={"success": False, "error": str(e)})
 
 @app.route('/download_file/<file_id>')
