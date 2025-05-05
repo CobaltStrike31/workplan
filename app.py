@@ -158,6 +158,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/verify', methods=['POST'])
+@csrf_protected
 def verify():
     try:
         framework_path = request.form.get('framework_path', '')
@@ -231,6 +232,7 @@ def results(verification_id):
     return render_template('results.html', result=result)
 
 @app.route('/api/verify-component', methods=['POST'])
+@csrf_protected
 def verify_component():
     try:
         component = request.json.get('component')
@@ -775,6 +777,7 @@ def process_encryption():
         return render_template('encrypt_payload.html', encryption_result={"success": False, "error": str(e)})
 
 @app.route('/process_conversion', methods=['POST'])
+@csrf_protected
 def process_conversion():
     """
     Traitement de la conversion PE en shellcode avec validation améliorée

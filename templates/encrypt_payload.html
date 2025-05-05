@@ -58,6 +58,9 @@
                         </div>
                         
                         <form action="{{ url_for('process_encryption') }}" method="post" enctype="multipart/form-data" id="encrypt-form">
+                            <!-- Protection CSRF -->
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+                            
                             <div class="mb-3">
                                 <label for="shellcode_file" class="form-label">Fichier Shellcode</label>
                                 <input type="file" class="form-control" id="shellcode_file" name="shellcode_file" required>

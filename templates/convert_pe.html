@@ -58,6 +58,9 @@
                         </div>
                         
                         <form action="{{ url_for('process_conversion') }}" method="post" enctype="multipart/form-data" id="convert-form">
+                            <!-- Protection CSRF -->
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+                            
                             <div class="mb-3">
                                 <label for="pe_file" class="form-label">Fichier PE</label>
                                 <input type="file" class="form-control" id="pe_file" name="pe_file" required>
