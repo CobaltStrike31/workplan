@@ -54,31 +54,35 @@
 }
 
 /* Couleurs des barres selon le niveau */
-.progress-bar-95, .progress-bar-90 {
+.progress-bar-95, .progress-bar-90, .progress-bar.progress-bar-95, .progress-bar.progress-bar-90 {
   background-color: #00b894;
 }
 
-.progress-bar-85, .progress-bar-80 {
+.progress-bar-85, .progress-bar-80, .progress-bar.progress-bar-85, .progress-bar.progress-bar-80 {
   background-color: #00cec9;
 }
 
-.progress-bar-75, .progress-bar-70 {
+.progress-bar-75, .progress-bar-70, .progress-bar.progress-bar-75, .progress-bar.progress-bar-70 {
   background-color: #74b9ff;
 }
 
-.progress-bar-65, .progress-bar-60 {
+.progress-bar-65, .progress-bar-60, .progress-bar.progress-bar-65, .progress-bar.progress-bar-60 {
   background-color: #a29bfe;
 }
 
-.progress-bar-55, .progress-bar-50 {
+.progress-bar-55, .progress-bar-50, .progress-bar.progress-bar-55, .progress-bar.progress-bar-50 {
   background-color: #ffeaa7;
+  color: #333; /* Texte plus foncé pour contraster avec les fonds clairs */
 }
 
-.progress-bar-45, .progress-bar-40 {
+.progress-bar-45, .progress-bar-40, .progress-bar.progress-bar-45, .progress-bar.progress-bar-40 {
   background-color: #fab1a0;
+  color: #333;
 }
 
-.progress-bar-35, .progress-bar-30, .progress-bar-25, .progress-bar-20, .progress-bar-15, .progress-bar-10, .progress-bar-5 {
+.progress-bar-35, .progress-bar-30, .progress-bar-25, .progress-bar-20, .progress-bar-15, .progress-bar-10, .progress-bar-5,
+.progress-bar.progress-bar-35, .progress-bar.progress-bar-30, .progress-bar.progress-bar-25, .progress-bar.progress-bar-20, 
+.progress-bar.progress-bar-15, .progress-bar.progress-bar-10, .progress-bar.progress-bar-5 {
   background-color: #ff7675;
 }
 
